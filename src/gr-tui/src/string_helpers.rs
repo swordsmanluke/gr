@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::ops::Add;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
@@ -5,6 +6,12 @@ use ratatui::text::{Line, Span};
 // Used so we can implement addition for spans into lines
 pub struct WrapSpan<'a> {
     span: Span<'a>,
+}
+
+impl Display for WrapSpan<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.span)
+    }
 }
 
 impl<'a> Into<Span<'a>> for WrapSpan<'a> {

@@ -1,6 +1,6 @@
 mod select;
 mod symbols;
-mod string_helpers;
+pub mod string_helpers;
 
 use std::io::stdout;
 
