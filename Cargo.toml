@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 #Local crate: gr-tui
 gr-tui = { path = "src/gr-tui" }
+gr-git = { path = "src/gr-git" }

@@ -17,3 +17,4 @@ Cargo.lock
 src/gr-tui/target
 .idea
 gr.iml
+src/gr-git/target

@@ -1,24 +1,46 @@
 use std::error::Error;
 use gr_tui::Tui;
+use gr_git::Git;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut tui = Tui::new();
     Tui::start();
 
-    let res = run_selection(&mut tui);
-
-    tui.stop();
+    // Read the arguments from the command line
+    let mut args = std::env::args().collect::<Vec<String>>();
+    args.pop(); // Remove the first argument, which is the name of the program
+    args.push("bco".to_string());
+    let res = match args.pop() {
+        Some(arg) => handle_argument(arg, args, &mut tui),
+        None => { println!("No argument provided"); Ok(()) },
+    };
 
 
     res
 }
 
-fn run_selection(tui: &mut Tui) -> Result<(), Box<dyn Error>> {
-    let options = vec!["Option 1", "Option 2", "Option 3", "Who Knows"].iter().map(|s| s.to_string()).collect();
-    let selected_options = tui.select(options, Some("Select an option".to_string()), true)?;
-    match selected_options {
-        Some(options) => println!("Selected option: {:?}", options.join(",")),
-        None => println!("No option selected"),
+fn handle_argument(command: String, args: Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
+    match command.as_str() {
+        "bco" => {
+            let branch = select_branch(tui)?;
+            Ok(tui.println(format!("Selected branch: {}", branch)))
+        },
+        _ => { println!("Unknown command: {}", command); Ok(()) },
     }
-    Ok(())
+}
+
+
+fn select_branch(tui: &mut Tui) -> Result<String, Box<dyn Error>>{
+    let git = Git::new();
+    let branches = git.branch("")?;
+    tui.println(format!("BRANCHES: {}", branches.clone().lines().count()));
+
+    let options = branches.lines().map(|s| s.to_string()).collect();
+
+    let selected_options = tui.select(options, Some("Select a branch".to_string()), false)?;
+
+    match selected_options {
+        Some(b) => Ok(b.first().expect("Expected a branch name!").to_string()),
+        None => Err("No branch selected".into()),
+    }
 }

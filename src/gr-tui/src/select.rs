@@ -1,7 +1,6 @@
 use std::error::Error;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
-use ratatui::style::{Color};
 use ratatui::text::{Line};
 use ratatui::widgets::Paragraph;
 use crate::string_helpers::Colorize;
@@ -55,6 +54,9 @@ impl SelectionState {
 impl Tui {
 
     pub fn select(&mut self, options: Vec<String>, prompt: Option<String>, multiple: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+        if options.is_empty() {
+            return Err("No options provided".into());
+        }
         match prompt {
             Some(prompt) => println!("{}", prompt),
             None => (),
