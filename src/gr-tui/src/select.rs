@@ -57,6 +57,17 @@ impl Tui {
         if options.is_empty() {
             return Err("No options provided".into());
         }
+
+        self.enter_alt_screen();
+        self.enter_raw_mode();
+        let res = self.perform_selection(options, prompt, multiple);
+        self.exit_raw_mode();
+        self.exit_alt_screen();
+
+        res
+    }
+
+    fn perform_selection(&mut self, options: Vec<String>, prompt: Option<String>, multiple: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
         match prompt {
             Some(prompt) => println!("{}", prompt),
             None => (),

@@ -5,7 +5,6 @@ use gr_tui::string_helpers::Colorize;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut tui = Tui::new();
-    Tui::start();
 
     // Read the arguments from the command line
     let mut args = std::env::args().collect::<Vec<String>>();
