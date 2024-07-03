@@ -1,12 +1,12 @@
 mod select;
 mod symbols;
+mod string_helpers;
 
-use std::io::{stdout, Result};
+use std::io::{stdout};
 
 use ratatui::{
     backend::CrosstermBackend,
     crossterm::{
-        event::{self, KeyCode, KeyEventKind},
         terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
         ExecutableCommand,
     },

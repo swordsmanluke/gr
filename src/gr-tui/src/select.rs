@@ -1,9 +1,10 @@
 use std::error::Error;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
-use ratatui::style::{Color, Style};
-use ratatui::text::{Line, Span};
+use ratatui::style::{Color};
+use ratatui::text::{Line};
 use ratatui::widgets::Paragraph;
+use crate::string_helpers::Colorize;
 use crate::symbols::{CHECK, RIGHT_TRIANGLE};
 use crate::Tui;
 
@@ -79,7 +80,7 @@ impl Tui {
             })?;
 
             // Handle Input
-            match Self::select_handle_input(&mut selection_state)? {
+            match Self::handle_selection_input(&mut selection_state)? {
                 SelectionEvent::Up => selection_state.up(),
                 SelectionEvent::Down => selection_state.down(),
                 SelectionEvent::Toggle(index) => selection_state.toggle(index),
@@ -95,7 +96,7 @@ impl Tui {
         Ok(Some(selection_state.selected_options.iter().map(|i| options[*i].clone()).collect()))
     }
 
-    fn select_handle_input(selection_state: &SelectionState) -> Result<SelectionEvent, Box<dyn Error>> {
+    fn handle_selection_input(selection_state: &SelectionState) -> Result<SelectionEvent, Box<dyn Error>> {
         // Handle Input
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
@@ -132,14 +133,11 @@ impl Tui {
 
                 let selected = selection_state.selected(index);
                 let checkmark = if selected { CHECK } else { " " };
-                Line::from(vec![
-                    Span::styled(caret.clone(), Style::default().fg(Color::Blue)),
-                    Span::from(" "),
-                    Span::styled(checkmark.clone(), Style::default().fg(Color::Green)),
-                    Span::from(" "),
-                    Span::from(option.clone())])
-            })
-            .collect();
+                let line = caret.red() + " " + checkmark.green() + " " + option.to_owned().gold();
+                line
+            }).into_iter()
+            .map(|s| { s.line })
+            .collect::<Vec<Line>>();
         options
     }
 }
