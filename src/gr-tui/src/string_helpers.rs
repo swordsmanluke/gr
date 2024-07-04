@@ -26,6 +26,13 @@ impl<'a> Into<WrapSpan<'a>> for Span<'a> {
     }
 }
 
+impl<'a> From<String> for WrapLine<'a> {
+    fn from(s: String) -> Self {
+        WrapLine { line: Line::from(s) }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct WrapLine<'a> {
     pub(crate) line: Line<'a>,
 }

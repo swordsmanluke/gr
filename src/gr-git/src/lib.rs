@@ -14,9 +14,20 @@ impl Git {
         Ok(output == "true")
     }
 
+    pub fn current_branch(&self) -> Result<String, Box<dyn Error>> {
+        self.assert_in_repo()?;
+        self.git("rev-parse", "--abbrev-ref HEAD")
+    }
+
     pub fn branch(&self, args: &str) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
         self.git("branch", args)
+    }
+
+    pub fn checkout(&self, args: &str) -> Result<(), Box<dyn Error>> {
+        self.assert_in_repo()?;
+        self.git("checkout", args)?;
+        Ok(())
     }
 
     pub fn switch(&self, branch: &str) -> Result<(), Box<dyn Error>> {

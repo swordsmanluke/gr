@@ -51,7 +51,7 @@ impl SelectionState {
     }
 }
 
-impl Tui {
+impl Tui<'_> {
 
     pub fn select(&mut self, options: Vec<String>, prompt: Option<String>, multiple: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
         if options.is_empty() {

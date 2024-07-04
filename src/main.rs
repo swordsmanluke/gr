@@ -9,26 +9,33 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Read the arguments from the command line
     let mut args = std::env::args().collect::<Vec<String>>();
     args.reverse();
-    tui.println(format!("ARGS: {:?}", args));
     args.pop(); // Remove the first argument, which is the name of the program
 
     let res = match args.pop() {
-        Some(arg) => handle_argument(arg, args, &mut tui),
+        Some(command) => process_command(command, args, &mut tui),
         None => { println!("No argument provided"); Ok(()) },
     };
 
-
+    tui.exit_raw_mode();
+    println!();
     res
 }
 
-fn handle_argument(command: String, args: Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
+fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
     match command.as_str() {
         "bco" => {
-            let branch = select_branch(tui)?;
+            let branch = args.first().unwrap_or(&select_branch(tui)?).to_owned();
             let git = Git::new();
             git.switch(&branch)?;
-            Ok(tui.println(format!("Checked out branch: {}", branch.green())))
+            Ok(tui.println("Checked out branch: ".default() + branch.green()))
         },
+        "bc" => {
+            let git = Git::new();
+            let cur_branch = args.first().unwrap_or(&git.current_branch()?).to_owned();
+            let branch = tui.prompt("Branch name:".green() + " ")?;
+            git.checkout(&format!("-t {} -b {}", cur_branch, branch))?;
+            Ok(tui.println("Created branch: ".default() +  branch.green()))
+        }
         _ => { println!("Unknown command: {}", command); Ok(()) },
     }
 }
@@ -37,8 +44,6 @@ fn handle_argument(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
 fn select_branch(tui: &mut Tui) -> Result<String, Box<dyn Error>>{
     let git = Git::new();
     let branches = git.branch("")?;
-    tui.println(format!("BRANCHES: {}", branches.clone().lines().count()));
-
     let options = branches.lines().map(|s| s.to_string()).collect();
 
     let selected_options = tui.select(options, Some("Select a branch".to_string()), false)?;

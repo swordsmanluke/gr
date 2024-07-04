@@ -1,43 +1,53 @@
 mod select;
 mod symbols;
 pub mod string_helpers;
+mod prompt;
 
 use std::error::Error;
 use std::io::stdout;
 
-use ratatui::{
-    backend::CrosstermBackend,
-    crossterm::{
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-        ExecutableCommand,
-    },
-    widgets::Paragraph,
-    Terminal,
-};
+use ratatui::{backend::CrosstermBackend, crossterm::{
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+}, widgets::Paragraph, Terminal, Frame};
 use ratatui::prelude::Line;
+use crate::string_helpers::{WrapLine, WrapSpan};
 
-pub struct Tui {
+pub struct Tui<'a> {
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
+    scrollback: Vec<Line<'a>>,
 }
 
-impl Tui {
-    pub fn println(&mut self, s: String) -> () {
+impl<'a> Tui<'a> {
+    pub fn println(&mut self, s: WrapLine<'a>) -> () {
+        self.print(s + "\n");
+    }
+
+    pub fn print(&mut self, s: WrapLine<'a>) -> () {
+        self.scrollback.push(s.line.clone());
+
+        while self.scrollback.len() > 100 {
+            self.scrollback.remove(0);
+        }
+
         self.terminal.draw(|frame| {
             let area = frame.size();
             frame.render_widget(
-                Paragraph::new(Line::from(s + "\n")),
+                Paragraph::new(
+                    self.scrollback.iter().cloned().collect::<Vec<Line>>()
+                ),
                 area,
             );
         }).unwrap();
     }
 }
 
-impl Tui {
-    pub fn new() -> Tui {
+impl Tui<'_> {
+    pub fn new() -> Tui<'static> {
         let mut terminal = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
         terminal.clear().unwrap();
 
-        Tui { terminal }
+        Tui { terminal, scrollback: Vec::new() }
     }
 
     pub fn enter_raw_mode(&mut self) {
