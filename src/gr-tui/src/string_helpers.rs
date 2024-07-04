@@ -3,49 +3,44 @@ use std::ops::Add;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 
-// Used so we can implement addition for spans into lines
-pub struct WrapSpan<'a> {
-    span: Span<'a>,
-}
-
-impl Display for WrapSpan<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.span)
-    }
-}
-
-impl<'a> Into<Span<'a>> for WrapSpan<'a> {
-    fn into(self) -> Span<'a> {
-        self.span
-    }
-}
-
-impl<'a> Into<WrapSpan<'a>> for Span<'a> {
-    fn into(self) -> WrapSpan<'a> {
-        WrapSpan { span: self }
-    }
-}
-
-impl<'a> From<String> for WrapLine<'a> {
-    fn from(s: String) -> Self {
-        WrapLine { line: Line::from(s) }
-    }
-}
-
 #[derive(Debug, Clone)]
-pub struct WrapLine<'a> {
+pub struct GrString<'a> {
     pub(crate) line: Line<'a>,
 }
 
-impl<'a> Into<Line<'a>> for WrapLine<'a> {
+impl<'a> GrString<'a> {
+    pub fn indent(&self, depth: usize) -> GrString<'a> {
+        GrString::from(" ".repeat(depth)) + self.clone()
+    }
+}
+
+impl<'a> From<String> for GrString<'a> {
+    fn from(s: String) -> Self {
+        GrString { line: Line::from(s) }
+    }
+}
+
+impl<'a> From<&str> for GrString<'a> {
+    fn from(s: &str) -> Self {
+        s.to_owned().into()
+    }
+}
+
+impl<'a> From<Span<'a>> for GrString<'a> {
+    fn from(s: Span<'a>) -> Self {
+        GrString { line: Line::from(s) }
+    }
+}
+
+impl<'a> Into<Line<'a>> for GrString<'a> {
     fn into(self) -> Line<'a> {
         self.line
     }
 }
 
-impl<'a> Into<WrapLine<'a>> for Line<'a> {
-    fn into(self) -> WrapLine<'a> {
-        WrapLine { line: self }
+impl<'a> Into<GrString<'a>> for Line<'a> {
+    fn into(self) -> GrString<'a> {
+        GrString { line: self }
     }
 }
 
@@ -53,152 +48,124 @@ impl<'a> Into<WrapLine<'a>> for Line<'a> {
  Helper methods to set colors on strings, converting them into Spans for Ratatui
  */
 pub trait Colorize {
-    fn fg<'a>(self, color: Color) -> WrapSpan<'a>;
-    fn bg<'a>(self, color: Color) -> WrapSpan<'a>;
+    fn fg<'a>(self, color: Color) -> GrString<'a>;
+    fn bg<'a>(self, color: Color) -> GrString<'a>;
 
-    fn red<'a>(self) -> WrapSpan<'a>;
-    fn green<'a>(self) -> WrapSpan<'a>;
-    fn blue<'a>(self) -> WrapSpan<'a>;
-    fn white<'a>(self) -> WrapSpan<'a>;
-    fn gold<'a>(self) -> WrapSpan<'a>;
-    fn default<'a>(self) -> WrapSpan<'a>;
+    fn red<'a>(self) -> GrString<'a>;
+    fn green<'a>(self) -> GrString<'a>;
+    fn blue<'a>(self) -> GrString<'a>;
+    fn cyan<'a>(self) -> GrString<'a>;
+    fn white<'a>(self) -> GrString<'a>;
+    fn gold<'a>(self) -> GrString<'a>;
+    fn default<'a>(self) -> GrString<'a>;
 }
 
 impl Colorize for &str {
-    fn fg<'a>(self, color: Color) -> WrapSpan<'a> {
+    fn fg<'a>(self, color: Color) -> GrString<'a> {
         self.to_string().fg(color)
     }
-
-    fn bg<'a>(self, color: Color) -> WrapSpan<'a> {
+    fn bg<'a>(self, color: Color) -> GrString<'a> {
         self.to_string().bg(color)
     }
 
-    fn red<'a>(self) -> WrapSpan<'a> {
+    fn red<'a>(self) -> GrString<'a> {
         self.fg(Color::Red)
     }
-    fn green<'a>(self) -> WrapSpan<'a> {
+    fn green<'a>(self) -> GrString<'a> {
         self.fg(Color::Green)
     }
-    fn blue<'a>(self) -> WrapSpan<'a> {
+    fn blue<'a>(self) -> GrString<'a> {
         self.fg(Color::Blue)
     }
-    fn white<'a>(self) -> WrapSpan<'a> {
+    fn cyan<'a>(self) -> GrString<'a> {
+        self.fg(Color::Cyan)
+    }
+    fn white<'a>(self) -> GrString<'a> {
         self.fg(Color::White)
     }
 
-    fn gold<'a>(self) -> WrapSpan<'a> {
+    fn gold<'a>(self) -> GrString<'a> {
         self.fg(Color::Yellow)
     }
 
-    fn default<'a>(self) -> WrapSpan<'a> {
+    fn default<'a>(self) -> GrString<'a> {
         self.fg(Color::Reset)
     }
 }
 
 impl Colorize for String {
-    fn fg<'a>(self, color: Color) -> WrapSpan<'a> {
+    fn fg<'a>(self, color: Color) -> GrString<'a> {
         Span::styled(self, Style::default().fg(color)).into()
     }
 
-    fn bg<'a>(self, color: Color) -> WrapSpan<'a> {
+    fn bg<'a>(self, color: Color) -> GrString<'a> {
         Span::styled(self, Style::default().bg(color)).into()
     }
 
-    fn red<'a>(self) -> WrapSpan<'a> {
+    fn red<'a>(self) -> GrString<'a> {
         self.fg(Color::Red)
     }
-    fn green<'a>(self) -> WrapSpan<'a> {
+    fn green<'a>(self) -> GrString<'a> {
         self.fg(Color::Green)
     }
-    fn blue<'a>(self) -> WrapSpan<'a> {
+    fn blue<'a>(self) -> GrString<'a> {
         self.fg(Color::Blue)
     }
-    fn white<'a>(self) -> WrapSpan<'a> {
+    fn cyan<'a>(self) -> GrString<'a> {
+        self.fg(Color::Cyan)
+    }
+    fn white<'a>(self) -> GrString<'a> {
         self.fg(Color::White)
     }
-
-    fn gold<'a>(self) -> WrapSpan<'a> {
+    fn gold<'a>(self) -> GrString<'a> {
         self.fg(Color::Yellow)
     }
 
-    fn default<'a>(self) -> WrapSpan<'a> {
+    fn default<'a>(self) -> GrString<'a> {
         self.fg(Color::Reset)
     }
 }
 
 /*
-Addition support, converting Spans to Lines
+Addition support, to make GrStrings viral
  */
 
-impl<'a> Add<WrapSpan<'a>> for WrapSpan<'a> {
-    type Output = WrapLine<'a>;
+impl<'a> Add<GrString<'a>> for GrString<'a> {
+    type Output = GrString<'a>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Line::from(vec![self.span, rhs.span]).into()
+        GrString { line: Line::from([self.line.clone().spans, rhs.line.clone().spans].concat()) }
     }
 }
 
-impl<'a> Add<Span<'a>> for WrapSpan<'a> {
-    type Output = WrapLine<'a>;
-
-    fn add(self, rhs: Span<'a>) -> Self::Output {
-        // Convert, then add
-        self + <Span<'a> as Into<WrapSpan<'a>>>::into(rhs)
-    }
-}
-
-impl<'a> Add<WrapLine<'a>> for WrapLine<'a> {
-    type Output = WrapLine<'a>;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        WrapLine { line: Line::from([self.line.spans, rhs.line.spans].concat()) }
-    }
-}
-
-impl<'a> Add<WrapSpan<'a>> for WrapLine<'a> {
-    type Output = WrapLine<'a>;
-
-    fn add(self, rhs: WrapSpan<'a>) -> Self::Output {
-        WrapLine { line: Line::from([self.line.spans, vec![rhs.span]].concat()) }
-    }
-}
-
-impl<'a> Add<&str> for WrapSpan<'a> {
-    type Output = WrapLine<'a>;
+impl<'a> Add<&str> for GrString<'a> {
+    type Output = GrString<'a>;
 
     fn add(self, rhs: &str) -> Self::Output {
         self + rhs.to_string()
     }
 }
 
-impl<'a> Add<String> for WrapSpan<'a> {
-    type Output = WrapLine<'a>;
+impl<'a> Add<String> for GrString<'a> {
+    type Output = GrString<'a>;
 
     fn add(self, rhs: String) -> Self::Output {
-        self + WrapSpan { span: Span::from(rhs) }
+        self + GrString { line: Line::from(rhs.clone()) }
     }
 }
 
-impl<'a> Add<&str> for WrapLine<'a> {
-    type Output = WrapLine<'a>;
-
-    fn add(self, rhs: &str) -> Self::Output {
-        self + rhs.to_string()
-    }
-}
-
-impl<'a> Add<String> for WrapLine<'a> {
-    type Output = WrapLine<'a>;
-
-    fn add(self, rhs: String) -> Self::Output {
-        self + WrapSpan { span: Span::from(rhs) }
-    }
-}
-
-impl<'a> Add<&String> for WrapLine<'a> {
-    type Output = WrapLine<'a>;
+impl<'a> Add<&String> for GrString<'a> {
+    type Output = GrString<'a>;
 
     fn add(self, rhs: &String) -> Self::Output {
-        self + WrapSpan { span: Span::from(rhs.to_owned()) }
+        self + GrString { line: Line::from(rhs.to_owned()) }
+    }
+}
+
+impl<'a> Add<&str> for &'a GrString<'a> {
+    type Output = GrString<'a>;
+
+    fn add(self, rhs: &str) -> Self::Output {
+        GrString { line: Line::from([self.clone().line.spans, Line::from(rhs.to_string()).spans].concat()) }
     }
 }

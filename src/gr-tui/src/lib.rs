@@ -5,13 +5,14 @@ mod prompt;
 
 use std::error::Error;
 use std::io::stdout;
-
+use std::thread::sleep;
 use ratatui::{backend::CrosstermBackend, crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 }, widgets::Paragraph, Terminal, Frame};
+use ratatui::crossterm::event;
 use ratatui::prelude::Line;
-use crate::string_helpers::{WrapLine, WrapSpan};
+use crate::string_helpers::GrString;
 
 pub struct Tui<'a> {
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
@@ -19,12 +20,12 @@ pub struct Tui<'a> {
 }
 
 impl<'a> Tui<'a> {
-    pub fn println(&mut self, s: WrapLine<'a>) -> () {
+    pub fn println(&mut self, s: GrString<'a>) -> () {
         self.print(s + "\n");
     }
 
-    pub fn print(&mut self, s: WrapLine<'a>) -> () {
-        self.scrollback.push(s.line.clone());
+    pub fn print(&mut self, s: GrString<'a>) -> () {
+        self.scrollback.push(s.line.clone().to_owned());
 
         while self.scrollback.len() > 100 {
             self.scrollback.remove(0);

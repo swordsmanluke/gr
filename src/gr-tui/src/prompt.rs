@@ -1,10 +1,10 @@
 use std::error::Error;
-use crate::string_helpers::WrapLine;
+use crate::string_helpers::GrString;
 use crate::Tui;
 
 impl<'a> Tui<'a> {
 
-    pub fn prompt(&mut self, prompt: WrapLine<'a>) -> Result<String, Box<dyn Error>> {
+    pub fn prompt(&mut self, prompt: GrString<'a>) -> Result<String, Box<dyn Error>> {
         self.exit_raw_mode();
         self.print(prompt.into());
         let cursor = self.terminal.get_cursor()?;

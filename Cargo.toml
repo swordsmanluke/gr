@@ -1,11 +1,19 @@
 [package]
 name = "gr"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-#Local crate: gr-tui
+# Directory assistance
+dirs = "5.0.1"
+
+# Config file parsing
+toml = "0.8.14"
+serde = { version = "1.0.130", features = ["derive"] }
+
+# Local crates
 gr-tui = { path = "src/gr-tui" }
 gr-git = { path = "src/gr-git" }
+
