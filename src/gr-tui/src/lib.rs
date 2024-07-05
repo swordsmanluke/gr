@@ -23,7 +23,9 @@ impl<'a> Tui<'a> {
     }
 
     pub fn print(&mut self, s: GrString<'a>) -> () {
-        self.scrollback.push(s.line.clone().to_owned());
+        s.line.to_string().split("\n").for_each(|lstr| {
+            self.scrollback.push(Line::from(lstr.to_owned()));
+        });
 
         while self.scrollback.len() > 100 {
             self.scrollback.remove(0);

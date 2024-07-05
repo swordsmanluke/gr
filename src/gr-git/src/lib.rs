@@ -46,6 +46,12 @@ impl Git {
     }
 
     pub fn parents(&self) -> Result<HashMap<String, String>, Box<dyn Error>> {
+        /// Formatted output of `git branch -vv` looks like this:
+        ///   main      483f881 Add: Branch movement commands
+        /// * movements 483f881 [main] Add: Branch movement commands
+        ///
+        /// Our regex here extracts the parent branch name from the output.
+        /// First group is the name of the branch, second group is the parent branch name
         self.assert_in_repo()?;
         let parent_regex = Regex::new(r"\s*(\S+\s+[a-f0-9]+)(\s+\[(.*)\])?\s+(.*)")?;
 
@@ -71,7 +77,14 @@ impl Git {
 
     pub fn parent_of(&self, branch: &str) -> Result<Option<String>, Box<dyn Error>> {
         self.assert_in_repo()?;
-        Ok(self.parents()?.get(branch).cloned())
+        let parent = self.parents()?.get(branch).cloned();
+        match parent {
+            Some(parent) => {
+                if parent.is_empty() { Ok(None) }
+                else { Ok(Some(parent)) }
+            },
+            None => Ok(None),
+        }
     }
 
     fn extract_parent(&self, parent: Option<Match>) -> String {
@@ -89,8 +102,9 @@ impl Git {
         // invert `parents` and take all children that belong to `branch` directly
         let output = self.parents()?
             .into_iter()
-            .filter(|(parent, _name)| parent == branch)
-            .map(|(_, name)| name)
+            .filter(|(_name, parent)| parent == branch)
+            .map(|(name, _parent)| name)
+            .filter (|name| !name.is_empty())
             .collect::<Vec<String>>();
 
         Ok(output)

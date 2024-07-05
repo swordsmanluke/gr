@@ -33,6 +33,7 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
             let git = Git::new();
             git.switch(&branch)?;
             tui.println(GrString::from("Checked out branch: ") + branch.green());
+            tui.println(git.status()?.green());
         },
         "bc" | "create" => {
             let git = Git::new();
@@ -47,6 +48,7 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
         },
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
             move_relative(tui, &command)?;
+            tui.println(GrString::from("Checked out branch: ") + git.current_branch()?.green());
             tui.println(git.status()?.green());
         }
         _ => { println!("Unknown command: {}", command) },

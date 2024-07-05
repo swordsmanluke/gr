@@ -22,7 +22,7 @@ pub fn move_relative(tui: &mut Tui, command: &str) -> Result<(), Box<dyn Error>>
                 cur_branch = git.current_branch()?
             }
         },
-        _ => { println!("Unknown command: {}", command) },
+        _ => { tui.println(format!("Unknown command: {}", command).to_owned().default()) },
     }
 
     Ok(())
@@ -32,6 +32,7 @@ fn move_down(tui: &mut Tui, git: &Git) -> Result<(), Box<dyn Error>> {
     let cur_branch = git.current_branch()?;
 
     let parent = git.parent_of(&cur_branch)?;
+
     match parent {
         None => { tui.println("You are already at the bottom of the stack".green()) },
         Some(p) => { git.checkout(&p)? }
