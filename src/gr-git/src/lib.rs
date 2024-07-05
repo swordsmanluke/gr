@@ -10,11 +10,20 @@ impl Git {
         Git {}
     }
 
+    /***** Information *****/
+
     pub fn in_repo(&self) -> Result<bool, Box<dyn Error>> {
         // Check if the current directory is a git repository
         let output = self.git("rev-parse", "--is-inside-work-tree")?;
         Ok(output == "true")
     }
+
+    pub fn status(&self) -> Result<String, Box<dyn Error>> {
+        self.assert_in_repo()?;
+        self.git("status", "")
+    }
+
+    /***** Branches *****/
 
     pub fn current_branch(&self) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
@@ -74,6 +83,21 @@ impl Git {
         }
     }
 
+    /// Returns all direct children of the given branch
+    pub fn children_of(&self, branch: &str) -> Result<Vec<String>, Box<dyn Error>> {
+        self.assert_in_repo()?;
+        // invert `parents` and take all children that belong to `branch` directly
+        let output = self.parents()?
+            .into_iter()
+            .filter(|(parent, _name)| parent == branch)
+            .map(|(_, name)| name)
+            .collect::<Vec<String>>();
+
+        Ok(output)
+    }
+
+    /***** Remotes *****/
+
     pub fn remotes(&self) -> Result<Vec<String>, Box<dyn Error>> {
         self.assert_in_repo()?;
         let output = self.remote("")?
@@ -88,6 +112,8 @@ impl Git {
         self.git("remote", args)
     }
 
+    /***** Commands *****/
+
     pub fn checkout(&self, args: &str) -> Result<(), Box<dyn Error>> {
         self.assert_in_repo()?;
         self.git("checkout", args)?;
@@ -99,6 +125,8 @@ impl Git {
         self.git("checkout", branch)?;
         Ok(())
     }
+
+    /***** Utilities *****/
 
     fn git(&self, command: &str, args: &str) -> Result<String, Box<dyn Error>> {
         // Execute the git executable with the given command and arguments

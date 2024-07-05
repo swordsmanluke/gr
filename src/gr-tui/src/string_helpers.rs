@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::ops::Add;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};

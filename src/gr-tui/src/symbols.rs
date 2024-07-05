@@ -1,5 +1,6 @@
 // Define a bunch of handy consts
 
+#![allow(dead_code)]
 pub const CHECK: &str = "✓";
 pub const CROSS: &str = "✕";
 pub const SMALL_SQUARE: &str = "▪";

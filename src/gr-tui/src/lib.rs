@@ -5,12 +5,10 @@ mod prompt;
 
 use std::error::Error;
 use std::io::stdout;
-use std::thread::sleep;
 use ratatui::{backend::CrosstermBackend, crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
-}, widgets::Paragraph, Terminal, Frame};
-use ratatui::crossterm::event;
+}, widgets::Paragraph, Terminal};
 use ratatui::prelude::Line;
 use crate::string_helpers::GrString;
 
