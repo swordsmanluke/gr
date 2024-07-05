@@ -29,17 +29,19 @@ were already implemented and need to be ported to Rust.
 To enable many of the features up there, we will need to ask
 `git` to help us do stuff. 
 
-- [ ] current branch name
-- [ ] parent of given branch (remote & local)
+- [x] current branch name
+- [ ] parent of given branch
+  - [x] local
+  - [ ] remote
 - [ ] create a commit
 - [ ] add files to commit
 - [ ] push to remote
 - [ ] pull from remote
 - [ ] rebase
-- [ ] check if currently _in_ a git repo
-- [ ] list all local branches
-- [ ] call git with arbitrary arguments 
-- [ ] ...and fork() 
+- [x] check if currently _in_ a git repo
+- [x] list all local branches
+- [x] call git with arbitrary arguments 
+  - [ ] ...and fork() to it 
 
 ## Connect with Github
 To support opening/updating/merging PRs on behalf of the User,
