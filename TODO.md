@@ -10,11 +10,11 @@ GQ is the previous version of this application. These commands
 were already implemented and need to be ported to Rust.
 
 - [x] add_branch: Create a new `git` branch
-- [ ] bottom: Move to the bottom of the commit stack
+- [x] bottom: Move to the bottom of the commit stack
 - [x] checkout: Switch to a different branch
 - [ ] commit: Save your latest changes
 - [ ] config: View the configuration file
-- [ ] down: Move down one branch in the stack
+- [x] down: Move down one branch in the stack
 - [x] init: Initialize a new project
 - [ ] log: View the commit stack
 - [ ] merge: Merge a stack of approved PRs 
@@ -22,8 +22,8 @@ were already implemented and need to be ported to Rust.
 - [ ] review: View open PRs for a given stack
 - [ ] submit: Recursively open PRs for the current stack
 - [ ] sync: Download remote contents, then restack
-- [ ] top: Move to the top of the stack
-- [ ] up: Move one branch up the stack
+- [x] top: Move to the top of the stack
+- [x] up: Move one branch up the stack
 
 ## Build out Git support
 To enable many of the features up there, we will need to ask
