@@ -1,0 +1,70 @@
+# TODO
+This is a list of features I need to add to GR to help 
+me keep track of what needs doing.
+
+The list is in alphabetical order, not order of importance
+so features may get done in a seemingly incoherent manner.
+
+## Port GQ Commands
+GQ is the previous version of this application. These commands
+were already implemented and need to be ported to Rust.
+
+- [x] add_branch: Create a new `git` branch
+- [ ] bottom: Move to the bottom of the commit stack
+- [x] checkout: Switch to a different branch
+- [ ] commit: Save your latest changes
+- [ ] config: View the configuration file
+- [ ] down: Move down one branch in the stack
+- [x] init: Initialize a new project
+- [ ] log: View the commit stack
+- [ ] merge: Merge a stack of approved PRs 
+- [ ] restack: Recursively rebase branches on their parent
+- [ ] review: View open PRs for a given stack
+- [ ] submit: Recursively open PRs for the current stack
+- [ ] sync: Download remote contents, then restack
+- [ ] top: Move to the top of the stack
+- [ ] up: Move one branch up the stack
+
+## Build out Git support
+To enable many of the features up there, we will need to ask
+`git` to help us do stuff. 
+
+- [ ] current branch name
+- [ ] parent of given branch (remote & local)
+- [ ] create a commit
+- [ ] add files to commit
+- [ ] push to remote
+- [ ] pull from remote
+- [ ] rebase
+- [ ] check if currently _in_ a git repo
+- [ ] list all local branches
+- [ ] call git with arbitrary arguments 
+- [ ] ...and fork() 
+
+## Connect with Github
+To support opening/updating/merging PRs on behalf of the User,
+we want to support connecting to github (others in future, maybe!)
+
+- [ ] authenticate to github
+- [ ] open a PR
+- [ ] list all PRs
+- [ ] retrieve a PR's information
+- [ ] check a PR's mergeability 
+  - [ ] no conflicts
+  - [ ] required checks passed
+  - [ ] required # of approvals met
+- [ ] merge a PR
+
+## Connect with CircleCI
+To support CI/CD approvals/tracking and suchlike, we want
+to connect to CircleCI (others in future!) and track deploy status
+
+- [ ] auth with Circle
+- [ ] list pipelines for given branch
+- [ ] check given pipeline status
+- [ ] get check statuses
+- [ ] send approval
+
+## Other
+
+- [ ] Redo the command verbs. Switch either to override git-cmds for familiarity... or break clean.

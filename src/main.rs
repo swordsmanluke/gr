@@ -1,11 +1,11 @@
-mod init;
+mod gr;
 mod config;
 
 use std::error::Error;
 use gr_tui::Tui;
 use gr_git::Git;
 use gr_tui::string_helpers::{Colorize, GrString};
-use crate::init::initialize_gr;
+use gr::initialize_gr;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut tui = Tui::new();
