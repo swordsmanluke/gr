@@ -1,9 +1,9 @@
 use std::error::Error;
+use colored::Colorize;
 use gr_git::Git;
-use gr_tui::string_helpers::Colorize;
-use gr_tui::Tui;
+use gr_tui::TuiWidget;
 
-pub fn move_relative(tui: &mut Tui, command: &str) -> Result<(), Box<dyn Error>> {
+pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn Error>> {
     let git = Git::new();
     match command {
         "bu" | "up" => { move_up(tui, &git)?; },
@@ -22,30 +22,30 @@ pub fn move_relative(tui: &mut Tui, command: &str) -> Result<(), Box<dyn Error>>
                 cur_branch = git.current_branch()?
             }
         },
-        _ => { tui.println(format!("Unknown command: {}", command).to_owned().default()) },
+        _ => { println!("Unknown command: {}", command) },
     }
 
     Ok(())
 }
 
-fn move_down(tui: &mut Tui, git: &Git) -> Result<(), Box<dyn Error>> {
+fn move_down(tui: &mut TuiWidget, git: &Git) -> Result<(), Box<dyn Error>> {
     let cur_branch = git.current_branch()?;
 
     let parent = git.parent_of(&cur_branch)?;
 
     match parent {
-        None => { tui.println("You are already at the bottom of the stack".green()) },
+        None => { println!("{}", "You are already at the bottom of the stack".green()) },
         Some(p) => { git.checkout(&p)? }
     }
     Ok(())
 }
 
-fn move_up(tui: &mut Tui, git: &Git) -> Result<(), Box<dyn Error>> {
+fn move_up(tui: &mut TuiWidget, git: &Git) -> Result<(), Box<dyn Error>> {
     let cur_branch= git.current_branch()?;
 
     let children = git.children_of(&cur_branch)?;
     match children.len() {
-        0 => { tui.println("You are already at the top of the stack".green()) },
+        0 => { println!("{}", "You are already at the top of the stack".green()) },
         1 => { git.checkout(&children[0])? }
         _ => {
             let child = tui.select_one("Which branch do you want to go up to?".into(), children)?;

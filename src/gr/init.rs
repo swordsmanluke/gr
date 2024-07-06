@@ -1,9 +1,9 @@
 use dirs::home_dir;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use colored::Colorize;
 use gr_git::Git;
-use gr_tui::string_helpers::Colorize;
-use gr_tui::Tui;
+use gr_tui::TuiWidget;
 use crate::config::{GrConfBranch, GRConfig};
 
 enum ReviewTool {
@@ -26,7 +26,7 @@ struct CRAuth {
     token: Option<String>,
 }
 
-pub fn initialize_gr(tui: &mut Tui) -> Result<(), Box<dyn Error>> {
+pub fn initialize_gr(tui: &mut TuiWidget) -> Result<(), Box<dyn Error>> {
     let git = Git::new();
     let gr_dir = config_dir_path()?;
     let config_file_path = format!("{}/config.toml", gr_dir);
@@ -35,12 +35,12 @@ pub fn initialize_gr(tui: &mut Tui) -> Result<(), Box<dyn Error>> {
     if config_file_exists(&config_file_path) {
         if tui.prompt("gr is already initialized - reinitialize?".into())?.to_lowercase() == "y" {}
         else {
-            tui.println("Aborted initialization".red());
+            println!("{}", "Aborted initialization".red());
             return Ok(());
         }
     }
 
-    tui.println("Initializing GQ...".green());
+    println!("{}", "Initializing GQ...".green());
 
     // Prepare -
     // Create the app's config directory if it doesn't exist
@@ -90,7 +90,7 @@ fn build_gr_conf_branch(git: &Git, branch: &str) -> Result<GrConfBranch, Box<dyn
     Ok(GrConfBranch { name: branch.to_string(), parent: git.parent_of(branch)?, remote_branch: None, review_id: None })
 }
 
-fn get_cr_auth(tui: &mut Tui, cr_tool: &ReviewTool) -> Result<CRAuth, Box<dyn Error>> {
+fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth, Box<dyn Error>> {
     match cr_tool {
         ReviewTool::None => Ok(CRAuth { user: None, pass: None, token: None }),
         ReviewTool::Github => {
@@ -118,7 +118,7 @@ fn get_cr_auth(tui: &mut Tui, cr_tool: &ReviewTool) -> Result<CRAuth, Box<dyn Er
     }
 }
 
-fn select_remote(tui: &mut Tui, git: &Git) -> Result<Option<String>, Box<dyn Error>> {
+fn select_remote(tui: &mut TuiWidget, git: &Git) -> Result<Option<String>, Box<dyn Error>> {
     let remotes = git.remotes()?;
     if remotes.is_empty() {
         return Ok(None);
@@ -126,39 +126,39 @@ fn select_remote(tui: &mut Tui, git: &Git) -> Result<Option<String>, Box<dyn Err
 
     let remote_op = tui.select_one("Select your remote:".into(), remotes)?;
     if remote_op.is_none() {
-        tui.println("No git remote selected - Proceeding without one".gold().indent(2));
+        println!("  {}", "No git remote selected - Proceeding without one".yellow());
         return Ok(None);
     }
     let remote = remote_op.unwrap();
-    let msg = "Remote: ".green() + remote.clone().cyan();
-    tui.println(msg.indent(2));
+    let msg = format!("  {} {}", "Remote: ".green(), remote.clone().cyan());
+    println!("{}", msg);
 
     Ok(Some(remote.clone()))
 }
 
-fn select_review_tool(tui: &mut Tui) -> Result<ReviewTool, Box<dyn Error>> {
+fn select_review_tool(tui: &mut TuiWidget) -> Result<ReviewTool, Box<dyn Error>> {
     let tool_str = tui.select_one("Select your review tool:".into(), vec![ReviewTool::None.to_string(), ReviewTool::Github.to_string()])?.unwrap_or("None".to_string());
     let tool = match tool_str.as_str() {
         "Github" => ReviewTool::Github,
         _ => ReviewTool::None
     };
 
-    let msg = "Review tool: ".green() + tool_str.clone().cyan();
-    tui.println(msg.indent(2));
+    let msg = format!("{} {}", "Review tool: ".green(), tool_str.clone().cyan());
+    println!("  {}", msg);
 
     Ok(tool)
 }
 
-fn select_root_branch(tui: &mut Tui, git: &Git) -> Result<String, Box<dyn Error>> {
+fn select_root_branch(tui: &mut TuiWidget, git: &Git) -> Result<String, Box<dyn Error>> {
     let branches = git.branches()?;
     let root_branch_op = tui.select_one("Select root branch:".into(), branches)?;
     if root_branch_op.is_none() {
-        tui.println("No root branch selected - Aborted initialization".red());
+        println!("{}", "No root branch selected - Aborted initialization".red());
         return Err("No root branch selected".into());
     }
     let root_branch = root_branch_op.unwrap();
-    let msg = "Root branch: ".green() + root_branch.clone().cyan();
-    tui.println(msg.indent(2));
+    let msg = format!("  {} {}", "Root branch: ".green(), root_branch.clone().cyan());
+    println!("{}", msg);
 
     Ok(root_branch.clone())
 }

@@ -1,15 +1,13 @@
 use std::error::Error;
-use crate::string_helpers::GrString;
-use crate::Tui;
+use ratatui::text::Span;
+use crate::TuiWidget;
 
-impl<'a> Tui<'a> {
+impl<'a> TuiWidget<'a> {
 
-    pub fn prompt(&mut self, prompt: GrString<'a>) -> Result<String, Box<dyn Error>> {
-        self.exit_raw_mode();
-        self.print(prompt.into());
-        let cursor = self.terminal.get_cursor()?;
-        self.terminal.set_cursor(cursor.0 + 1, cursor.1)?;
+    pub fn prompt(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
         self.terminal.show_cursor()?;
+
+        print!("{} ", prompt);
 
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;

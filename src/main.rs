@@ -2,13 +2,13 @@ mod gr;
 mod config;
 
 use std::error::Error;
-use gr_tui::Tui;
+use colored::Colorize;
+use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
-use gr_tui::string_helpers::{Colorize, GrString};
 use gr::{initialize_gr, move_relative};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut tui = Tui::new();
+    let mut tui = TuiWidget::new();
 
     // Read the arguments from the command line
     let mut args = std::env::args().collect::<Vec<String>>();
@@ -25,32 +25,32 @@ fn main() -> Result<(), Box<dyn Error>> {
     res
 }
 
-fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
+fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<(), Box<dyn Error>>{
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
             let branch = args.first().unwrap_or(&select_branch(tui)?).to_owned();
             git.switch(&branch)?;
-            tui.println(GrString::from("Checked out branch: ") + branch.green());
-            tui.println(git.status()?.green());
+            println!("Checked out branch: {}", branch.green());
+            println!("{}", git.status()?.green());
         },
         "bc" | "create" => {
             let cur_branch = git.current_branch()?;
             let branch = match args.pop() {
                 Some(b) => b,
-                None => tui.prompt("Branch name:".green() + " ")?,
+                None => tui.prompt("Branch name: ")?,
             };
 
             git.checkout(&format!("-t {} -b {}", cur_branch, branch))?;
-            tui.println("Created branch: ".default() + branch.green());
+            println!("Created branch: {}", branch.green());
         },
         "init" => {
             initialize_gr(tui)?;
-            tui.println("Initialized gr config".into());
+            println!("Initialized gr config");
         },
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
             move_relative(tui, &command)?;
-            tui.println(GrString::from("Checked out branch: ") + git.current_branch()?.green());
+            println!("Checked out branch: {}", git.current_branch()?.green());
             let egit = ExecGit::new();
             tui.exit_raw_mode();
             println!();  // Clear space to the next line.
@@ -72,7 +72,7 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut Tui) -
 }
 
 
-fn select_branch(tui: &mut Tui) -> Result<String, Box<dyn Error>>{
+fn select_branch(tui: &mut TuiWidget) -> Result<String, Box<dyn Error>>{
     let git = Git::new();
     let branches = git.branch("")?;
     let options = branches.lines().map(|s| s.to_string()).collect();

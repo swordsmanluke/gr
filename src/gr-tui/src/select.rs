@@ -1,11 +1,12 @@
 use std::error::Error;
+use colored::Colorize;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
+use ratatui::crossterm::style::Stylize;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::Paragraph;
-use crate::string_helpers::Colorize;
 use crate::symbols::{CHECK, RIGHT_TRIANGLE};
-use crate::Tui;
+use crate::widget::TuiWidget;
 
 struct SelectionState {
     allow_multiple: bool,
@@ -71,7 +72,7 @@ impl SelectionState {
     }
 }
 
-impl Tui<'_> {
+impl TuiWidget<'_> {
 
     pub fn yn(&mut self, prompt: String) -> Result<bool, Box<dyn Error>> {
         let selection = self.select_one(prompt,vec!["Yes".into(), "No".into()])?;
@@ -98,11 +99,13 @@ impl Tui<'_> {
             return Err("No options provided".into());
         }
 
-        // self.enter_alt_screen();
+        self.enter_alt_screen();
         self.enter_raw_mode();
+        self.terminal.hide_cursor()?;
         let res = self.perform_selection(options, prompt, multiple, auto_select);
+        self.terminal.show_cursor()?;
         self.exit_raw_mode();
-        // self.exit_alt_screen();
+        self.exit_alt_screen();
 
         res
     }
@@ -188,10 +191,10 @@ impl Tui<'_> {
 
                 let selected = selection_state.selected(index);
                 let checkmark = if selected { CHECK } else { " " };
-                let line = caret.red() + " " + checkmark.green() + " " + option.to_owned().gold();
+                let line = format!("{} {} {}", Colorize::red(caret), Colorize::green(checkmark), Colorize::yellow(option.as_str()));
                 line
             }).into_iter()
-            .map(|s| { s.line })
+            .map(|s| { s.into() })
             .collect::<Vec<Line>>();
         options
     }
