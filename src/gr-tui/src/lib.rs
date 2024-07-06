@@ -23,9 +23,19 @@ impl<'a> Tui<'a> {
     }
 
     pub fn print(&mut self, s: GrString<'a>) -> () {
-        s.line.to_string().split("\n").for_each(|lstr| {
-            self.scrollback.push(Line::from(lstr.to_owned()));
+        let mut group = Vec::new();
+        s.line.spans.into_iter().for_each(|span| {
+            group.push(span.clone());
+            if span.content.contains("\n") {
+                self.scrollback.push(Line::from(group.clone()));
+                group.clear();
+            }
         });
+
+        if group.len() > 0 {
+            self.scrollback.push(Line::from(group.clone()));
+            group.clear();
+        }
 
         while self.scrollback.len() > 100 {
             self.scrollback.remove(0);
@@ -46,8 +56,6 @@ impl<'a> Tui<'a> {
 impl Tui<'_> {
     pub fn new() -> Tui<'static> {
         let mut terminal = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
-        terminal.clear().unwrap();
-
         Tui { terminal, scrollback: Vec::new() }
     }
 
@@ -67,19 +75,5 @@ impl Tui<'_> {
 
     pub fn exit_alt_screen(&mut self) {
         stdout().execute(LeaveAlternateScreen).unwrap();
-    }
-
-    pub fn in_raw_mode(&mut self, f: fn() -> Result<(), Box<dyn Error>>) -> Result<(), Box<dyn Error>> {
-        self.enter_raw_mode();
-        let r = f();
-        self.exit_raw_mode();
-        r
-    }
-
-    pub fn in_alt_screen(&mut self, f: fn() -> Result<(), Box<dyn Error>>) -> Result<(), Box<dyn Error>> {
-        self.enter_alt_screen();
-        let r = f();
-        self.exit_alt_screen();
-        r
     }
 }

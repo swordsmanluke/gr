@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     args.pop(); // Remove the first argument, which is the name of the program
 
     let res = match args.pop() {
-        Some(command) => process_command(command, args, &mut tui),
+        Some(command) => process_command(command, &mut args, &mut tui),
         None => { println!("No argument provided"); Ok(()) },
     };
 
@@ -25,20 +25,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     res
 }
 
-fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
+fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut Tui) -> Result<(), Box<dyn Error>>{
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
             let branch = args.first().unwrap_or(&select_branch(tui)?).to_owned();
-            let git = Git::new();
             git.switch(&branch)?;
             tui.println(GrString::from("Checked out branch: ") + branch.green());
             tui.println(git.status()?.green());
         },
         "bc" | "create" => {
-            let git = Git::new();
-            let cur_branch = args.first().unwrap_or(&git.current_branch()?).to_owned();
-            let branch = tui.prompt("Branch name:".green() + " ")?;
+            let cur_branch = git.current_branch()?;
+            let branch = match args.pop() {
+                Some(b) => b,
+                None => tui.prompt("Branch name:".green() + " ")?,
+            };
+
             git.checkout(&format!("-t {} -b {}", cur_branch, branch))?;
             tui.println("Created branch: ".default() + branch.green());
         },
@@ -50,7 +52,6 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
             move_relative(tui, &command)?;
             tui.println(GrString::from("Checked out branch: ") + git.current_branch()?.green());
             let egit = ExecGit::new();
-            tui.exit_alt_screen();
             tui.exit_raw_mode();
             println!();  // Clear space to the next line.
             egit.status()?; // Exits gr and hands control to git
@@ -59,7 +60,6 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
             let git = ExecGit::new();
             let mut new_args = Vec::new();
             args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
-            tui.exit_alt_screen();
             tui.exit_raw_mode();
             println!();  // Clear space to the next line.
 
