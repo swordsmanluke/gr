@@ -33,7 +33,7 @@ pub fn initialize_gr(tui: &mut TuiWidget) -> Result<(), Box<dyn Error>> {
 
     // Check if the config file exists
     if config_file_exists(&config_file_path) {
-        if tui.prompt("gr is already initialized - reinitialize?".into())?.to_lowercase() == "y" {}
+        if tui.yn("gr is already initialized - reinitialize?".into())? {}
         else {
             println!("{}", "Aborted initialization".red());
             return Ok(());
