@@ -49,7 +49,11 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
             move_relative(tui, &command)?;
             tui.println(GrString::from("Checked out branch: ") + git.current_branch()?.green());
-            tui.println(git.status()?.green());
+            let egit = ExecGit::new();
+            tui.exit_alt_screen();
+            tui.exit_raw_mode();
+            println!();  // Clear space to the next line.
+            egit.status()?; // Exits gr and hands control to git
         },
         "cc" | "commit" => {
             let git = ExecGit::new();

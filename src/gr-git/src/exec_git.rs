@@ -1,7 +1,5 @@
 /// 'exec's git commands, ending 'gr' and handing off control to 'git'
 use std::error::Error;
-use std::ffi::OsStr;
-use std::os::unix::ffi::OsStrExt;
 use exec::Command;
 
 pub struct ExecGit;
@@ -11,9 +9,13 @@ impl ExecGit {
         ExecGit {}
     }
 
+    pub fn status(&self) -> Result<(), Box<dyn Error>> {
+        self.git("status", Vec::new())?;
+        Ok(())
+    }
+
     pub fn commit(&self, args: Vec<String>) -> Result<(), Box<dyn Error>> {
         self.git("commit", args)?;
-        // we should never get here.
         Ok(())
     }
 
