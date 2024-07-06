@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::io::Write;
 use ratatui::text::Span;
 use crate::TuiWidget;
 
@@ -8,6 +9,7 @@ impl<'a> TuiWidget<'a> {
         self.terminal.show_cursor()?;
 
         print!("{} ", prompt);
+        std::io::stdout().flush()?;
 
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;

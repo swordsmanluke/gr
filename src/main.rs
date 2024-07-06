@@ -52,17 +52,12 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             move_relative(tui, &command)?;
             println!("Checked out branch: {}", git.current_branch()?.green());
             let egit = ExecGit::new();
-            tui.exit_raw_mode();
-            println!();  // Clear space to the next line.
             egit.status()?; // Exits gr and hands control to git
         },
         "cc" | "commit" => {
             let git = ExecGit::new();
             let mut new_args = Vec::new();
             args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
-            tui.exit_raw_mode();
-            println!();  // Clear space to the next line.
-
             git.commit(new_args)?;
             // ExecGit should take over the process - we won't return here.
         }
