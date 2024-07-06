@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::io::stdout;
 use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::ExecutableCommand;
@@ -16,21 +17,40 @@ impl TuiWidget<'_> {
         TuiWidget { terminal, scrollback: Vec::new() }
     }
 
-    pub fn enter_raw_mode(&mut self) {
-        self.terminal.hide_cursor().unwrap();
-        enable_raw_mode().unwrap();
+    pub fn enter(&mut self) -> Result<(), Box<dyn Error>>{
+        self.enter_alt_screen()?;
+        self.enter_raw_mode()?;
+        self.terminal.clear()?;
+        self.terminal.hide_cursor()?;
+        Ok(())
     }
 
-    pub fn exit_raw_mode(&mut self) {
-        self.terminal.show_cursor().unwrap();
-        disable_raw_mode().unwrap();
+    pub fn exit(&mut self) -> Result<(), Box<dyn Error>>{
+        self.exit_alt_screen();
+        self.exit_raw_mode();
+        self.terminal.show_cursor()?;
+        Ok(())
     }
 
-    pub fn enter_alt_screen(&mut self) {
-        stdout().execute(EnterAlternateScreen).unwrap();
+    pub fn enter_raw_mode(&mut self) -> Result<(), Box<dyn Error>> {
+        self.terminal.hide_cursor()?;
+        enable_raw_mode()?;
+        Ok(())
     }
 
-    pub fn exit_alt_screen(&mut self) {
-        stdout().execute(LeaveAlternateScreen).unwrap();
+    pub fn exit_raw_mode(&mut self) -> Result<(), Box<dyn Error>> {
+        self.terminal.show_cursor()?;
+        disable_raw_mode()?;
+        Ok(())
+    }
+
+    pub fn enter_alt_screen(&mut self) -> Result<(), Box<dyn Error>> {
+        stdout().execute(EnterAlternateScreen)?;
+        Ok(())
+    }
+
+    pub fn exit_alt_screen(&mut self) -> Result<(), Box<dyn Error>> {
+        stdout().execute(LeaveAlternateScreen)?;
+        Ok(())
     }
 }

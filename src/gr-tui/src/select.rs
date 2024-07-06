@@ -99,13 +99,9 @@ impl TuiWidget<'_> {
             return Err("No options provided".into());
         }
 
-        self.enter_alt_screen();
-        self.enter_raw_mode();
-        self.terminal.hide_cursor()?;
+        self.enter()?;
         let res = self.perform_selection(options, prompt, multiple, auto_select);
-        self.terminal.show_cursor()?;
-        self.exit_raw_mode();
-        self.exit_alt_screen();
+        self.exit()?;
 
         res
     }
