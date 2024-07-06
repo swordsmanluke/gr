@@ -12,7 +12,7 @@ were already implemented and need to be ported to Rust.
 - [x] add_branch: Create a new `git` branch
 - [x] bottom: Move to the bottom of the commit stack
 - [x] checkout: Switch to a different branch
-- [ ] commit: Save your latest changes
+- [x] commit: Save your latest changes
 - [ ] config: View the configuration file
 - [x] down: Move down one branch in the stack
 - [x] init: Initialize a new project
@@ -41,7 +41,7 @@ To enable many of the features up there, we will need to ask
 - [x] check if currently _in_ a git repo
 - [x] list all local branches
 - [x] call git with arbitrary arguments 
-  - [ ] ...and fork() to it 
+  - [x] ...and fork() to it 
 
 ## Connect with Github
 To support opening/updating/merging PRs on behalf of the User,

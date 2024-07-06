@@ -1,3 +1,6 @@
+mod exec_git;
+pub use exec_git::ExecGit;  // export for consumers of this crate
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::Command;

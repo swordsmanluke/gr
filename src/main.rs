@@ -3,7 +3,7 @@ mod config;
 
 use std::error::Error;
 use gr_tui::Tui;
-use gr_git::Git;
+use gr_git::{ExecGit, Git};
 use gr_tui::string_helpers::{Colorize, GrString};
 use gr::{initialize_gr, move_relative};
 
@@ -50,6 +50,23 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
             move_relative(tui, &command)?;
             tui.println(GrString::from("Checked out branch: ") + git.current_branch()?.green());
             tui.println(git.status()?.green());
+        },
+        "cc" | "commit" => {
+            let git = ExecGit::new();
+            let mut new_args = Vec::new();
+            args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
+            tui.exit_alt_screen();
+            tui.exit_raw_mode();
+
+            // Escape the arguments so that they are correctly passed to git
+            new_args = new_args
+                .into_iter()
+                .map(|s| s.to_string())
+                // .map(|s| if s.contains(" ") || s.contains("\n") || s.contains("\t") { format!("\"{}\"", s) } else { s.to_string()                })
+                .collect();
+
+            git.commit(new_args)?;
+            // ExecGit should take over the process - we won't return here.
         }
         _ => { println!("Unknown command: {}", command) },
     }
