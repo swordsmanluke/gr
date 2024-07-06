@@ -107,11 +107,11 @@ fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth, Box<
             }
 
             if tui.yn("Do you have a personal access token?".into())? {
-                let token = tui.prompt("Paste your Github token:".into())?;
+                let token = tui.prompt("Paste your Github token: ".into())?;
                 Ok(CRAuth { user: None, pass: None, token: Some(token) })
             } else {
-                let user = tui.prompt("Enter your Github username:".into())?;
-                let pass = tui.prompt("Enter your Github password:".into())?;
+                let user = tui.prompt("Enter your Github username: ".into())?;
+                let pass = tui.prompt("Enter your Github password: ".into())?;
                 Ok(CRAuth { user: Some(user), pass: Some(pass), token: None })
             }
         }

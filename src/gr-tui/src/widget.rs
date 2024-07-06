@@ -29,6 +29,7 @@ impl TuiWidget<'_> {
         self.exit_alt_screen();
         self.exit_raw_mode();
         self.terminal.show_cursor()?;
+        println!();
         Ok(())
     }
 
