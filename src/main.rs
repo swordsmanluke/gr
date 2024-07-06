@@ -57,13 +57,7 @@ fn process_command(command: String, args: Vec<String>, tui: &mut Tui) -> Result<
             args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
             tui.exit_alt_screen();
             tui.exit_raw_mode();
-
-            // Escape the arguments so that they are correctly passed to git
-            new_args = new_args
-                .into_iter()
-                .map(|s| s.to_string())
-                // .map(|s| if s.contains(" ") || s.contains("\n") || s.contains("\t") { format!("\"{}\"", s) } else { s.to_string()                })
-                .collect();
+            println!();  // Clear space to the next line.
 
             git.commit(new_args)?;
             // ExecGit should take over the process - we won't return here.
