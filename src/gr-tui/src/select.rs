@@ -2,8 +2,8 @@ use std::error::Error;
 use colored::Colorize;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
-use ratatui::crossterm::style::Stylize;
-use ratatui::text::{Line, Text};
+use ratatui::style::Stylize;
+use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::Paragraph;
 use crate::symbols::{CHECK, RIGHT_TRIANGLE};
 use crate::widget::TuiWidget;
@@ -187,7 +187,12 @@ impl TuiWidget<'_> {
 
                 let selected = selection_state.selected(index);
                 let checkmark = if selected { CHECK } else { " " };
-                let line = format!("{} {} {}", Colorize::red(caret), Colorize::green(checkmark), Colorize::yellow(option.as_str()));
+                let line = Line::from(vec![
+                    Span::from(caret).red(),
+                    Span::from(" "),
+                    Span::from(checkmark).green(),
+                    Span::from(" "),
+                    Span::from(option)]);
                 line
             }).into_iter()
             .map(|s| { s.into() })
