@@ -4,6 +4,7 @@ pub use exec_git::ExecGit;  // export for consumers of this crate
 
 use std::error::Error;
 use std::process::Command;
+use colored::Colorize;
 
 pub struct Git;
 
@@ -12,50 +13,80 @@ impl Git {
         Git {}
     }
 
+    /***** Transformative *****/
+    pub fn pull(&self, args: Vec<&str>) -> Result<String, Box<dyn Error>> {
+        self.assert_in_repo()?;
+        self.git("pull", args)
+    }
+
+    pub fn rebase(&self, branch: &str, base: &str) -> Result<String, Box<dyn Error>> {
+        self.assert_in_repo()?;
+
+        if branch == base {
+            return Err("Cannot rebase onto self".into());
+        }
+
+        if !self.branches()?.contains(&String::from(branch)) {
+            return Err(format!("Branch {} does not exist", branch).into());
+        }
+
+        if base.contains("/") &&
+            self.remotes()?.iter().any(|remote| base.starts_with(remote)) {
+                self.git("rebase", vec![base])
+            }
+        else {
+            self.git("rebase", vec![base, branch])
+        }
+    }
+
     /***** Information *****/
 
     pub fn in_repo(&self) -> Result<bool, Box<dyn Error>> {
         // Check if the current directory is a git repository
-        let output = self.git("rev-parse", "--is-inside-work-tree")?;
+        let output = self.git("rev-parse", vec!["--is-inside-work-tree"])?;
         Ok(output == "true")
     }
 
     pub fn status(&self) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("status", "")
+        self.git("status", vec![""])
     }
 
     /***** Remotes *****/
 
     pub fn remotes(&self) -> Result<Vec<String>, Box<dyn Error>> {
         self.assert_in_repo()?;
-        let output = self.remote("")?
+        let output = self.remote(Vec::new())?
             .lines()
             .map(|s| s.to_string())
             .collect();
         Ok(output)
     }
 
-    pub fn remote(&self, args: &str) -> Result<String, Box<dyn Error>> {
+    pub fn remote(&self, args: Vec<&str>) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
         self.git("remote", args)
     }
 
     /***** Utilities *****/
 
-    fn git(&self, command: &str, args: &str) -> Result<String, Box<dyn Error>> {
+    fn git(&self, command: &str, args: Vec<&str>) -> Result<String, Box<dyn Error>> {
         // Execute the git executable with the given command and arguments
         // and return the output
-        let split_args = args.split(" ").filter(|s| !s.is_empty()).collect::<Vec<&str>>();
         let mut g = Command::new("git");
         let mut cmd = g.arg(command);
 
-        if split_args.len() != 0 {
-            cmd = cmd.args(split_args);
-        }
+        if args.len() != 0 { cmd = cmd.args(args.clone()); }
 
         // Execute the command and get the output
         let output = cmd.output()?;
+
+        // Check the exit code
+        if !output.status.success() {
+            let msg = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(format!("{}\n{}", format!("> git {} {}", command, args.join(" ")).red(), msg.yellow()).into());
+        }
+
         let out = String::from_utf8_lossy(&output.stdout).to_string();
         let err = String::from_utf8_lossy(&output.stderr).to_string();
         let text = out + "\n" + &err;

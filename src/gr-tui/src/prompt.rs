@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::io::Write;
-use ratatui::text::Span;
 use crate::TuiWidget;
 
 impl<'a> TuiWidget<'a> {

@@ -1,5 +1,5 @@
 mod select;
-mod symbols;
+pub mod symbols;
 mod prompt;
 mod widget;
 use std::error::Error;

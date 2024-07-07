@@ -207,6 +207,7 @@ dependencies = [
 name = "gr-git"
 version = "0.1.0"
 dependencies = [
+ "colored",
  "exec",
  "regex",
 ]

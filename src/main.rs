@@ -6,6 +6,7 @@ use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
+use crate::gr::restack;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut tui = TuiWidget::new();
@@ -44,6 +45,13 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             git.checkout(&format!("-t {} -b {}", cur_branch, branch))?;
             println!("Created branch: {}", branch.green());
         },
+        "cc" | "commit" => {
+            let git = ExecGit::new();
+            let mut new_args = Vec::new();
+            args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
+            git.commit(new_args)?;
+            // ExecGit should take over the process - we won't return here.
+        }
         "init" => {
             initialize_gr(tui)?;
             println!("Initialized gr config");
@@ -54,12 +62,10 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             let egit = ExecGit::new();
             egit.status()?; // Exits gr and hands control to git
         },
-        "cc" | "commit" => {
-            let git = ExecGit::new();
-            let mut new_args = Vec::new();
-            args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
-            git.commit(new_args)?;
-            // ExecGit should take over the process - we won't return here.
+        "sync" => {
+            println!("{}", "Syncing current stack...".green());
+            restack()?;
+            println!("{}", "Complete".green());
         }
         _ => { println!("Unknown command: {}", command) },
     }

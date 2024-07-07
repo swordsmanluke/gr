@@ -10,25 +10,25 @@ impl Git {
 
     pub fn checkout(&self, args: &str) -> Result<(), Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("checkout", args)?;
+        self.git("checkout", vec![args])?;
         Ok(())
     }
 
     pub fn switch(&self, branch: &str) -> Result<(), Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("switch", branch)?;
+        self.git("switch", vec![branch])?;
         Ok(())
     }
 
     /**** Information ***/
     pub fn current_branch(&self) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("rev-parse", "--abbrev-ref HEAD")
+        self.git("rev-parse", vec!["--abbrev-ref", "HEAD"])
     }
 
     pub fn branches(&self) -> Result<Vec<String>, Box<dyn Error>> {
         self.assert_in_repo()?;
-        let output = self.git("for-each-ref", "--format=%(refname:short) refs/heads/")?
+        let output = self.git("for-each-ref", vec!["--format=%(refname:short)", "refs/heads/"])?
             .lines()
             .map(|s| s.to_string())
             .collect();
@@ -38,7 +38,7 @@ impl Git {
 
     pub fn branch(&self, args: &str) -> Result<String, Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("branch", args)
+        self.git("branch", vec![args])
     }
 
     pub fn parents(&self) -> Result<HashMap<String, String>, Box<dyn Error>> {
