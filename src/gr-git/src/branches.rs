@@ -8,9 +8,9 @@ use crate::Git;
 impl Git {
     /***** Commands *****/
 
-    pub fn checkout(&self, args: &str) -> Result<(), Box<dyn Error>> {
+    pub fn checkout(&self, args: Vec<&str>) -> Result<(), Box<dyn Error>> {
         self.assert_in_repo()?;
-        self.git("checkout", vec![args])?;
+        self.git("checkout", args)?;
         Ok(())
     }
 

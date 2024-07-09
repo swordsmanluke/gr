@@ -42,7 +42,7 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
                 None => tui.prompt("Branch name: ")?,
             };
 
-            git.checkout(&format!("-t {} -b {}", cur_branch, branch))?;
+            git.checkout(vec!["-t", &cur_branch, "-b", &branch])?;
             println!("Created branch: {}", branch.green());
         },
         "cc" | "commit" => {
