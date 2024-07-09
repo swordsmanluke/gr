@@ -18,10 +18,9 @@ were already implemented and need to be ported to Rust.
 - [x] init: Initialize a new project
 - [ ] log: View the commit stack
 - [ ] merge: Merge a stack of approved PRs 
-- [ ] restack: Recursively rebase branches on their parent
 - [ ] review: View open PRs for a given stack
 - [ ] submit: Recursively open PRs for the current stack
-- [ ] sync: Download remote contents, then restack
+- [x] sync: Download remote contents, then recursively pull-rebase on parent branch(es)
 - [x] top: Move to the top of the stack
 - [x] up: Move one branch up the stack
 
