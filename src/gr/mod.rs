@@ -1,6 +1,7 @@
 mod init;
 mod r#move;
 mod restack;
+mod submit;
 
 /// whoops - rust really doesn't like you overriding a keyword with a module name
 

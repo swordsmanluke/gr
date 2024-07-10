@@ -16,5 +16,6 @@ serde = { version = "1.0.130", features = ["derive"] }
 # Local crates
 gr-tui = { path = "src/gr-tui" }
 gr-git = { path = "src/gr-git" }
+gr-reviews = { path = "src/gr-reviews" }
 colored = "2.1.0"
 

@@ -1,0 +1,8 @@
+[package]
+name = "gr-reviews"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gr-git = { path = "../gr-git" }
+octocrab= "0.38.0"

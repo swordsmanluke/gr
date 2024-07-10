@@ -62,6 +62,9 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             let egit = ExecGit::new();
             egit.status()?; // Exits gr and hands control to git
         },
+        "submit" => {
+            println!("Not implemented");
+        },
         "sync" => {
             println!("{}", "Syncing current stack...".green());
             restack()?;
