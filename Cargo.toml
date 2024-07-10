@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# Directory assistance
+# Directory manipulation assistance
 dirs = "5.0.1"
 
 # Config file parsing
@@ -17,5 +17,11 @@ serde = { version = "1.0.130", features = ["derive"] }
 gr-tui = { path = "src/gr-tui" }
 gr-git = { path = "src/gr-git" }
 gr-reviews = { path = "src/gr-reviews" }
+
+# Text colors
 colored = "2.1.0"
+# URL support
+url = "2.5.2"
+# Async engine
+tokio = { version = "1.0.0", features = ["rt", "rt-multi-thread", "macros"] }
 

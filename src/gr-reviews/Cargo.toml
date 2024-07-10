@@ -4,5 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Async trait support
+async-trait = "0.1.81"
+
+colored = "2.0.0"
+
+itertools = "0.13.0"
+
+# Local git crate
 gr-git = { path = "../gr-git" }
+
+# Github API support
+# ...this is why we need async trait stuff. :(
 octocrab= "0.38.0"
+url = "2.5.2"

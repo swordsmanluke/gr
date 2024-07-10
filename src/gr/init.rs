@@ -4,27 +4,7 @@ use std::fmt::{Display, Formatter};
 use colored::Colorize;
 use gr_git::Git;
 use gr_tui::TuiWidget;
-use crate::config::{GrConfBranch, GRConfig};
-
-enum ReviewTool {
-    None,
-    Github
-}
-
-impl Display for ReviewTool {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ReviewTool::None => write!(f, "None"),
-            ReviewTool::Github => write!(f, "Github"),
-        }
-    }
-}
-
-struct CRAuth {
-    user: Option<String>,
-    pass: Option<String>,
-    token: Option<String>,
-}
+use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig, ReviewTool};
 
 pub fn initialize_gr(tui: &mut TuiWidget) -> Result<(), Box<dyn Error>> {
     let git = Git::new();
@@ -163,23 +143,3 @@ fn select_root_branch(tui: &mut TuiWidget, git: &Git) -> Result<String, Box<dyn 
     Ok(root_branch.clone())
 }
 
-fn config_file_exists(conf_file_path: &str) -> bool {
-    std::path::Path::new(conf_file_path).exists()
-}
-
-fn config_dir_path() -> Result<String, Box<dyn Error>> {
-    // Get the user's home directory
-    let home = home_dir().unwrap();
-    // the current working directory
-    let cwd = std::env::current_dir().unwrap();
-
-    // The project directory (the end of the path after the cwd)
-    let project = cwd.as_path().iter().last().unwrap();
-
-    // Now we can build our config directory, which will be ~/.config/gr/[project]/[path to project]
-    let gr_dir = format!("{}/.config/gr/{}/{}",
-                         home.to_str().unwrap(),
-                         project.to_str().unwrap(),
-                         cwd.to_str().unwrap());
-    Ok(gr_dir)
-}

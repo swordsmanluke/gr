@@ -5,10 +5,13 @@ use std::error::Error;
 use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
+use gr_reviews::review_service_for;
 use gr::{initialize_gr, move_relative};
+use url::Url;
 use crate::gr::restack;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     let mut tui = TuiWidget::new();
 
     // Read the arguments from the command line
@@ -17,16 +20,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     args.pop(); // Remove the first argument, which is the name of the program
 
     let res = match args.pop() {
-        Some(command) => process_command(command, &mut args, &mut tui),
+        Some(command) => process_command(command, &mut args, &mut tui).await,
         None => { println!("No argument provided"); Ok(()) },
     };
 
     tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
     println!(); // ...and we're done - return the result and exit.
-    res
+
+    if let Err(e) = res {
+        println!("Error occurred: {}", e.to_string().red());
+        return Err(e);
+    } else {
+        println!("{}", "Done".green());
+    }
+    Ok(())
 }
 
-fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<(), Box<dyn Error>>{
+async fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWidget<'_>) -> Result<(), Box<dyn Error>>{
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
@@ -56,12 +66,28 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             initialize_gr(tui)?;
             println!("Initialized gr config");
         },
-        "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
-            move_relative(tui, &command)?;
-            println!("Checked out branch: {}", git.current_branch()?.green());
-            let egit = ExecGit::new();
-            egit.status()?; // Exits gr and hands control to git
-        },
+        "rv" | "reviews" => {
+            let config = config::read_config()?;
+            let service = review_service_for(&config.code_review_tool)?;
+
+            if service.is_none() {
+                println!("No review service configured");
+                return Ok(());
+            }
+
+            let reviews = service.unwrap().reviews().await?;
+            for r in reviews
+            {
+                let url =match r.url {
+                    Some(url) => url.to_string(),
+                    None => "".to_string(),
+                };
+
+                println!("{}: {}", r.id.cyan().bold(), r.state.to_string().yellow());
+                println!("  {}", r.title.blue());
+                println!("  {}", url);
+            }
+        }
         "submit" => {
             println!("Not implemented");
         },
@@ -70,6 +96,12 @@ fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWid
             restack()?;
             println!("{}", "Complete".green());
         }
+        "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
+            move_relative(tui, &command)?;
+            println!("Checked out branch: {}", git.current_branch()?.green());
+            let egit = ExecGit::new();
+            egit.status()?; // Exits gr and hands control to git
+        },
         _ => { println!("Unknown command: {}", command) },
     }
     Ok(())

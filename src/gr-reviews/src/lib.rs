@@ -1,33 +1,27 @@
 mod review;
-mod github;
 mod none;
+mod github;
 
-use std::iter::Rev;
+use colored::Colorize;
 use gr_git::Git;
 pub use review::*;
 use crate::github::GithubReviewer;
 use crate::none::NoneReviewer;
 
-pub fn review_services() -> Vec<String> {
-    vec!["none".to_string(),
-         "github".to_string()]
-}
-
-pub fn review_service_for<T>(name: &str) -> Result<Option<T>, String>
-where T: ReviewService
+pub fn review_service_for(name: &str) -> Result<Option<Box<dyn ReviewService>>, String>
 {
-    if name == "none" {
-        return Ok(Some(NoneReviewer::new()));
+    if name == "None" {
+        return Ok(Some(Box::new(NoneReviewer::new())));
     }
 
-    if name == "github" {
+    if name == "Github" {
         return Ok(get_github_reviewer());
     }
 
     return Err(format!("Unknown code review service: {}", name));
 }
 
-fn get_github_reviewer() -> Option<GithubReviewer> {
+fn get_github_reviewer() -> Option<Box<dyn ReviewService>> {
     let git = Git::new();
 
     // use the remote url to determine if this is a github repo
@@ -39,10 +33,13 @@ fn get_github_reviewer() -> Option<GithubReviewer> {
         return None;
     }
 
-    let remote = gh_remotes.first().unwrap();
+    // Drop everything before "github.com/" to get the owner and repo names
+    let remote = gh_remotes.first().unwrap().split("github.com").collect::<Vec<&str>>()[1];
 
-    let owner = remote.split("/").collect::<Vec<&str>>()[0];
-    let repo = remote.split("/").collect::<Vec<&str>>()[1];
+    let owner = remote.split("/").collect::<Vec<&str>>()[0].trim().replace(":", "").replace("/", "");
+    let repo = remote.split("/").collect::<Vec<&str>>()[1].split(" ").collect::<Vec<&str>>()[0].trim()
+        .replace("/", "")
+        .replace(".git", "");
 
-    Some(GithubReviewer::new(owner, repo))
+    Some(Box::new(GithubReviewer::new(&owner, &repo)))
 }
