@@ -2,7 +2,7 @@ use dirs::home_dir;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use colored::Colorize;
-use gr_git::Git;
+use gr_git::{BranchType, Git};
 use gr_tui::TuiWidget;
 use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig, ReviewTool};
 
@@ -67,7 +67,7 @@ fn build_branch_conf(git: &Git) -> Result<Vec<GrConfBranch>, Box<dyn Error>> {
 }
 
 fn build_gr_conf_branch(git: &Git, branch: &str) -> Result<GrConfBranch, Box<dyn Error>> {
-    Ok(GrConfBranch { name: branch.to_string(), parent: git.parent_of(branch)?, remote_branch: None, review_id: None })
+    Ok(GrConfBranch { name: branch.to_string(), parent: git.parent_of(branch, BranchType::Local)?, remote_branch: None, review_id: None })
 }
 
 fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth, Box<dyn Error>> {

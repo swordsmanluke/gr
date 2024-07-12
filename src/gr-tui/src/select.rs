@@ -74,7 +74,7 @@ impl SelectionState {
 
 impl TuiWidget<'_> {
 
-    pub fn yn(&mut self, prompt: String) -> Result<bool, Box<dyn Error>> {
+    pub fn yn(&mut self, prompt: &str) -> Result<bool, Box<dyn Error>> {
         let selection = self.select_one(prompt,vec!["Yes".into(), "No".into()])?;
         match selection {
             Some(choice) => Ok(choice == "Yes"),
@@ -82,7 +82,7 @@ impl TuiWidget<'_> {
         }
     }
 
-    pub fn select_one(&mut self, prompt: String, options: Vec<String>) -> Result<Option<String>, Box<dyn Error>> {
+    pub fn select_one(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<String>, Box<dyn Error>> {
         let selections = self.select(options, Some(prompt), false, true)?;
         match selections {
             Some(mut selections) => Ok(selections.pop()),
@@ -90,11 +90,11 @@ impl TuiWidget<'_> {
         }
     }
 
-    pub fn select_many(&mut self, prompt: String, options: Vec<String>) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    pub fn select_many(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<Vec<String>>, Box<dyn Error>> {
         self.select(options, Some(prompt), true, false)
     }
 
-    pub fn select(&mut self, options: Vec<String>, prompt: Option<String>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    pub fn select(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
         if options.is_empty() {
             return Err("No options provided".into());
         }
@@ -106,7 +106,7 @@ impl TuiWidget<'_> {
         res
     }
 
-    fn perform_selection(&mut self, options: Vec<String>, prompt: Option<String>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    fn perform_selection(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
         let mut selected_options = Vec::new();
         if auto_select {
             selected_options.push(0);
@@ -122,8 +122,9 @@ impl TuiWidget<'_> {
 
         loop {
             let options = Self::format_options(&options, &mut selection_state);
-            let prompt = Line::from(prompt.clone().unwrap_or("".to_string()));
-            let text = Text::from([vec![prompt.clone()], options].concat());
+            let mut prompt = Text::from(prompt.clone().unwrap_or(""));
+            let opt_text = Text::from(options.clone());
+            let text = Text::from(vec![prompt.lines, opt_text.lines].concat());
             // Draw UI
             self.terminal.draw(|frame| {
                 let area = frame.size();

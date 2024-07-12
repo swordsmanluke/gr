@@ -8,3 +8,5 @@ mod submit;
 pub use init::initialize_gr;
 pub use r#move::move_relative;
 pub use restack::restack;
+pub use submit::submit;
+pub use submit::reviews;

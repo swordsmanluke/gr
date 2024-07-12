@@ -4,9 +4,10 @@ use async_trait::async_trait;
 use url::Url;
 
 /// Represents the state of a code review
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub enum ReviewState {
     Conflicted,
+    #[default]
     Pending,
     Approved,
     Rejected,
@@ -44,7 +45,7 @@ pub struct ReviewTest {
 }
 
 /// Represents a code review
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Review {
     pub id: String,
     pub branch: String,
@@ -63,8 +64,15 @@ pub struct Review {
 pub trait TReview {
     fn refresh(&mut self) -> Result<(), Box<dyn Error>>;
     fn merge(&mut self) -> Result<MergeRequest, Box<dyn Error>>;
+    /*
+    // Github Review Merge
+    self.client
+            .repos(&self.owner, &self.repo)
+            .merge(branch, parent)
+            .commit_message("This is a custom merge-commit message")
+            .send()
+     */
 }
-
 
 /// Whether or not a given code review has been merged - but from the Merge Request's perspective
 pub enum MergeState {
@@ -90,4 +98,5 @@ pub trait ReviewService {
     async fn reviews(&self) -> Result<Vec<Review>, Box<dyn Error>>;
     async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>, Box<dyn Error>>;
     async fn review(&self, id: &str) -> Result<Option<Review>, Box<dyn Error>>;
+    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review, Box<dyn Error>>;
 }

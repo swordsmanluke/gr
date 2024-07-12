@@ -436,6 +436,7 @@ dependencies = [
  "gr-git",
  "gr-reviews",
  "gr-tui",
+ "regex",
  "serde",
  "tokio",
  "toml",

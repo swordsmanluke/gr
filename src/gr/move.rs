@@ -1,6 +1,6 @@
 use std::error::Error;
 use colored::Colorize;
-use gr_git::Git;
+use gr_git::{BranchType, Git};
 use gr_tui::TuiWidget;
 
 pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn Error>> {
@@ -17,7 +17,7 @@ pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn E
         },
         "bottom" => {
             let mut cur_branch = git.current_branch()?;
-            while git.parent_of(&cur_branch)?.is_some() {
+            while git.parent_of(&cur_branch, BranchType::Local)?.is_some() {
                 move_down(&git)?;
                 cur_branch = git.current_branch()?
             }
@@ -31,7 +31,7 @@ pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn E
 fn move_down(git: &Git) -> Result<(), Box<dyn Error>> {
     let cur_branch = git.current_branch()?;
 
-    let parent = git.parent_of(&cur_branch)?;
+    let parent = git.parent_of(&cur_branch, BranchType::Local)?;
 
     match parent {
         None => { println!("{}", "You are already at the bottom of the stack".green()) },

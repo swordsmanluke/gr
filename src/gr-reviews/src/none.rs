@@ -25,4 +25,8 @@ impl ReviewService for NoneReviewer {
     async fn review(&self, id: &str) -> Result<Option<Review>, Box<dyn Error>> {
         Ok(None)
     }
+
+    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review, Box<dyn Error>> {
+        Ok((Review::default()))
+    }
 }

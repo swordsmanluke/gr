@@ -5,6 +5,12 @@ use crate::Git;
 
 // TODO: Standardize on Vec<String> for args
 
+pub enum BranchType {
+    Local,
+    Remote,
+    All
+}
+
 impl Git {
     /***** Commands *****/
 
@@ -71,15 +77,20 @@ impl Git {
         Ok(output)
     }
 
-    pub fn parent_of(&self, branch: &str) -> Result<Option<String>, Box<dyn Error>> {
+    pub fn parent_of(&self, branch: &str, branch_type: BranchType) -> Result<Option<String>, Box<dyn Error>> {
         self.assert_in_repo()?;
-        let parent = self.parents()?.get(branch).cloned();
-        match parent {
-            Some(parent) => {
-                if parent.is_empty() { Ok(None) }
-                else { Ok(Some(parent)) }
-            },
+        let maybe_parent = self.parents()?.get(branch).cloned();
+        let parent_is_remote = maybe_parent.is_some() && !self.branches()?.contains(maybe_parent.as_ref().unwrap());
+
+        match maybe_parent {
             None => Ok(None),
+            Some(parent) => {
+                match branch_type {
+                    BranchType::All => Ok(Some(parent)),
+                    BranchType::Local => if parent_is_remote { Ok(None) } else { Ok(Some(parent)) },
+                    BranchType::Remote => if parent_is_remote { Ok(Some(parent)) } else { Ok(None) }
+                }
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 mod gr;
 mod config;
+mod indent;
 
 use std::error::Error;
 use colored::Colorize;
@@ -7,8 +8,7 @@ use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
 use gr_reviews::review_service_for;
 use gr::{initialize_gr, move_relative};
-use url::Url;
-use crate::gr::restack;
+use crate::gr::{restack, reviews, submit};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -68,15 +68,9 @@ async fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut 
         },
         "rv" | "reviews" => {
             let config = config::read_config()?;
-            let service = review_service_for(&config.code_review_tool)?;
+            let revs = reviews(&config.code_review_tool).await?;
 
-            if service.is_none() {
-                println!("No review service configured");
-                return Ok(());
-            }
-
-            let reviews = service.unwrap().reviews().await?;
-            for r in reviews
+            for r in revs
             {
                 let url =match r.url {
                     Some(url) => url.to_string(),
@@ -89,7 +83,9 @@ async fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut 
             }
         }
         "submit" => {
-            println!("Not implemented");
+            let cfg = config::read_config()?;
+            submit(tui, &cfg.code_review_tool, &cfg.origin).await?;
+            println!("{}", "Done".green());
         },
         "sync" => {
             println!("{}", "Syncing current stack...".green());
@@ -113,7 +109,7 @@ fn select_branch(tui: &mut TuiWidget) -> Result<String, Box<dyn Error>>{
     let branches = git.branch("")?;
     let options = branches.lines().map(|s| s.to_string()).collect();
 
-    let selection = tui.select_one("Select a branch".to_string(), options)?;
+    let selection = tui.select_one("Select a branch", options)?;
 
     match selection {
         Some(b) => Ok(b),

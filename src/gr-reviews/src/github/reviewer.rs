@@ -8,6 +8,7 @@ use octocrab;
 use octocrab::models::{IssueState};
 use octocrab::models::checks::CheckRun;
 use octocrab::models::pulls::PullRequest;
+use octocrab::Octocrab;
 use octocrab::params::repos::Commitish;
 
 pub struct GithubReviewer {
@@ -115,8 +116,6 @@ fn state_of_review(prc: &PullRequestWithChecks) -> ReviewState {
 #[async_trait]
 impl ReviewService for GithubReviewer {
     async fn reviews(&self) -> Result<Vec<Review>, Box<dyn Error>> {
-        println!("Fetching review for repo: {}/{}", self.owner.cyan(), self.repo.green());
-
         let data = self.client
             .pulls(&self.owner, &self.repo)
             .list()
@@ -149,4 +148,15 @@ impl ReviewService for GithubReviewer {
         Ok(Some(self.convert_to_review(pr).await?))
     }
 
+    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review, Box<dyn Error>> {
+        let handler = self.client.pulls(&self.owner, &self.repo);
+        let pull = handler
+            .create(title, branch, parent)
+            .body(String::from(body))
+            .send().await?;
+
+        let review = self.convert_to_review(pull).await?;
+
+        Ok(review)
+    }
 }
