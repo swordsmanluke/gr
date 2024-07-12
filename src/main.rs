@@ -26,15 +26,13 @@ async fn main() -> Result<()> {
     let _ = tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
     println!(); // ...and we're done - return the result and exit.
 
-    // if let Err(e) = res {
-    //     println!("Error occurred: {}", e.to_string().red());
-    //     return Err(e);
-    // } else {
-    //     println!("{}", "Done".green());
-    // }
-    // Ok(())
-
-    res
+    if let Err(e) = res {
+        println!("Error occurred: {}", e.to_string().red());
+        return Err(e);
+    } else {
+        println!("{}", "Done".green());
+    }
+    Ok(())
 }
 
 async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<()>{

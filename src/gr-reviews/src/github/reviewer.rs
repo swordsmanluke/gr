@@ -1,15 +1,17 @@
 use anyhow::{anyhow, Result};
 use std::sync::Arc;
 use async_trait::async_trait;
+use colored::Colorize;
 use crate::{Review, ReviewService, ReviewState};
 use octocrab;
 use octocrab::models::{IssueState};
 use octocrab::models::checks::CheckRun;
 use octocrab::models::pulls::PullRequest;
+use octocrab::Octocrab;
 use octocrab::params::repos::Commitish;
 
 pub struct GithubReviewer {
-    client: Arc<octocrab::Octocrab>,
+    client: Octocrab,
     owner: String,
     repo: String
 }
@@ -21,7 +23,10 @@ struct PullRequestWithChecks {
 
 impl GithubReviewer {
     pub fn new(gh_owner: &str, gh_repo: &str) -> GithubReviewer {
-        GithubReviewer { client: octocrab::instance(),
+        let token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN env variable is required");
+        let client = Octocrab::builder().personal_token(token).build().unwrap();
+
+        GithubReviewer { client,
             owner: gh_owner.to_string(),
             repo: gh_repo.to_string()
         }
@@ -145,10 +150,13 @@ impl ReviewService for GithubReviewer {
 
     async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review> {
         let handler = self.client.pulls(&self.owner, &self.repo);
+        println!("Creating review for {} [on {}] at {}/{}", branch.cyan(), parent.black(), self.owner.green(), self.repo.blue());
+        println!("PR title: {}", title.bold());
         let pull = handler
             .create(title, branch, parent)
             .body(String::from(body))
-            .send().await?;
+            .send()
+            .await?;
 
         let review = self.convert_to_review(pull).await?;
 

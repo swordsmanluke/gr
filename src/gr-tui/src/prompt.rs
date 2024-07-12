@@ -46,7 +46,7 @@ impl Widget for Prompt {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let prompt_line = Line::from(vec![
             Span::from(format!("{}: ", self.state.prompt).bold()),
-            Span::from(self.state.input).gray()
+            Span::from(self.state.input)
         ]);
         let txt = Text::from(prompt_line);
         Clear.render(area, buf);
