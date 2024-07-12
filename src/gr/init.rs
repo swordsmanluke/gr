@@ -1,10 +1,10 @@
-use std::error::Error;
+use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_git::{BranchType, Git};
 use gr_tui::TuiWidget;
 use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig, ReviewTool};
 
-pub fn initialize_gr(tui: &mut TuiWidget) -> Result<(), Box<dyn Error>> {
+pub fn initialize_gr(tui: &mut TuiWidget) -> Result<()> {
     let git = Git::new();
     let gr_dir = config_dir_path()?;
     let config_file_path = format!("{}/config.toml", gr_dir);
@@ -53,7 +53,7 @@ pub fn initialize_gr(tui: &mut TuiWidget) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn build_branch_conf(git: &Git) -> Result<Vec<GrConfBranch>, Box<dyn Error>> {
+fn build_branch_conf(git: &Git) -> Result<Vec<GrConfBranch>> {
     let branches = git.branches()?;
 
     // TODO: add support for tracking remote branches
@@ -64,11 +64,11 @@ fn build_branch_conf(git: &Git) -> Result<Vec<GrConfBranch>, Box<dyn Error>> {
     Ok(config)
 }
 
-fn build_gr_conf_branch(git: &Git, branch: &str) -> Result<GrConfBranch, Box<dyn Error>> {
+fn build_gr_conf_branch(git: &Git, branch: &str) -> Result<GrConfBranch> {
     Ok(GrConfBranch { name: branch.to_string(), parent: git.parent_of(branch, BranchType::Local)?, remote_branch: None, review_id: None })
 }
 
-fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth, Box<dyn Error>> {
+fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth> {
     match cr_tool {
         ReviewTool::None => Ok(CRAuth { user: None, pass: None, token: None }),
         ReviewTool::Github => {
@@ -96,7 +96,7 @@ fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth, Box<
     }
 }
 
-fn select_remote(tui: &mut TuiWidget, git: &Git) -> Result<Option<String>, Box<dyn Error>> {
+fn select_remote(tui: &mut TuiWidget, git: &Git) -> Result<Option<String>> {
     let remotes = git.remotes()?;
     if remotes.is_empty() {
         return Ok(None);
@@ -114,7 +114,7 @@ fn select_remote(tui: &mut TuiWidget, git: &Git) -> Result<Option<String>, Box<d
     Ok(Some(remote.clone()))
 }
 
-fn select_review_tool(tui: &mut TuiWidget) -> Result<ReviewTool, Box<dyn Error>> {
+fn select_review_tool(tui: &mut TuiWidget) -> Result<ReviewTool> {
     let tool_str = tui.select_one("Select your review tool:".into(), vec![ReviewTool::None.to_string(), ReviewTool::Github.to_string()])?.unwrap_or("None".to_string());
     let tool = match tool_str.as_str() {
         "Github" => ReviewTool::Github,
@@ -127,12 +127,12 @@ fn select_review_tool(tui: &mut TuiWidget) -> Result<ReviewTool, Box<dyn Error>>
     Ok(tool)
 }
 
-fn select_root_branch(tui: &mut TuiWidget, git: &Git) -> Result<String, Box<dyn Error>> {
+fn select_root_branch(tui: &mut TuiWidget, git: &Git) -> Result<String> {
     let branches = git.branches()?;
     let root_branch_op = tui.select_one("Select root branch:".into(), branches)?;
     if root_branch_op.is_none() {
         println!("{}", "No root branch selected - Aborted initialization".red());
-        return Err("No root branch selected".into());
+        return Err(anyhow!("No root branch selected"));
     }
     let root_branch = root_branch_op.unwrap();
     let msg = format!("  {} {}", "Root branch: ".green(), root_branch.clone().cyan());

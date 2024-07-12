@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::error::Error;
+use anyhow::Result;
 use regex::{Match, Regex};
 use crate::Git;
 
@@ -14,25 +14,25 @@ pub enum BranchType {
 impl Git {
     /***** Commands *****/
 
-    pub fn checkout(&self, args: Vec<&str>) -> Result<(), Box<dyn Error>> {
+    pub fn checkout(&self, args: Vec<&str>) -> Result<()> {
         self.assert_in_repo()?;
         self.git("checkout", args)?;
         Ok(())
     }
 
-    pub fn switch(&self, branch: &str) -> Result<(), Box<dyn Error>> {
+    pub fn switch(&self, branch: &str) -> Result<()> {
         self.assert_in_repo()?;
         self.git("switch", vec![branch])?;
         Ok(())
     }
 
     /**** Information ***/
-    pub fn current_branch(&self) -> Result<String, Box<dyn Error>> {
+    pub fn current_branch(&self) -> Result<String> {
         self.assert_in_repo()?;
         self.git("rev-parse", vec!["--abbrev-ref", "HEAD"])
     }
 
-    pub fn branches(&self) -> Result<Vec<String>, Box<dyn Error>> {
+    pub fn branches(&self) -> Result<Vec<String>> {
         self.assert_in_repo()?;
         let output = self.git("for-each-ref", vec!["--format=%(refname:short)", "refs/heads/"])?
             .lines()
@@ -42,12 +42,12 @@ impl Git {
         Ok(output)
     }
 
-    pub fn branch(&self, args: &str) -> Result<String, Box<dyn Error>> {
+    pub fn branch(&self, args: &str) -> Result<String> {
         self.assert_in_repo()?;
         self.git("branch", vec![args])
     }
 
-    pub fn parents(&self) -> Result<HashMap<String, String>, Box<dyn Error>> {
+    pub fn parents(&self) -> Result<HashMap<String, String>> {
         // Formatted output of `git branch -vv` looks like this:
         //   main      483f881 Add: Branch movement commands
         // * movements 483f881 [main] Add: Branch movement commands
@@ -77,7 +77,7 @@ impl Git {
         Ok(output)
     }
 
-    pub fn parent_of(&self, branch: &str, branch_type: BranchType) -> Result<Option<String>, Box<dyn Error>> {
+    pub fn parent_of(&self, branch: &str, branch_type: BranchType) -> Result<Option<String>> {
         self.assert_in_repo()?;
         let maybe_parent = self.parents()?.get(branch).cloned();
         let parent_is_remote = maybe_parent.is_some() && !self.branches()?.contains(maybe_parent.as_ref().unwrap());
@@ -104,7 +104,7 @@ impl Git {
     }
 
     /// Returns all direct children of the given branch
-    pub fn children_of(&self, branch: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    pub fn children_of(&self, branch: &str) -> Result<Vec<String>> {
         self.assert_in_repo()?;
         // invert `parents` and take all children that belong to `branch` directly
         let output = self.parents()?

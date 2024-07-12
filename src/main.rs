@@ -2,7 +2,7 @@ mod gr;
 mod config;
 mod indent;
 
-use std::error::Error;
+use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
@@ -10,7 +10,7 @@ use gr::{initialize_gr, move_relative};
 use crate::gr::{restack, reviews, submit};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let mut tui = TuiWidget::new();
 
     // Read the arguments from the command line
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     res
 }
 
-async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<(), Box<dyn Error>>{
+async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<()>{
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
@@ -105,7 +105,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
 }
 
 
-fn select_branch(tui: &mut TuiWidget) -> Result<String, Box<dyn Error>>{
+fn select_branch(tui: &mut TuiWidget) -> Result<String>{
     let git = Git::new();
     let branches = git.branch("")?;
     let options = branches.lines().map(|s| s.to_string()).collect();
@@ -114,6 +114,6 @@ fn select_branch(tui: &mut TuiWidget) -> Result<String, Box<dyn Error>>{
 
     match selection {
         Some(b) => Ok(b),
-        None => Err("No branch selected".into()),
+        None => Err(anyhow!("No branch selected")),
     }
 }

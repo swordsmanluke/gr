@@ -2,7 +2,7 @@
 use gr_reviews::review_service_for;
 use gr_reviews::ReviewService;
 use gr_reviews::Review;
-use std::error::Error;
+use anyhow::Result;
 use colored::Colorize;
 use gr_git::Git;
 use gr_git::BranchType;
@@ -12,14 +12,14 @@ use regex::Regex;
 use crate::indent::Indentable;
 
 /// Retrieves the list of reviews for the current repo
-pub async fn reviews(cr_tool: &str) -> Result<Vec<Review>, Box<dyn Error>> {
+pub async fn reviews(cr_tool: &str) -> Result<Vec<Review>> {
     let service = review_service_for(cr_tool)?.unwrap();
     service.reviews().await
 }
 
 /// Creates / Updates code reviews for the current stack of branches
 /// e.g. the current branch and all of its ancestors down to the root
-pub async fn submit(tui: &mut TuiWidget, cr_tool: &str, remote: &str) -> Result<(), Box<dyn Error>> {
+pub async fn submit(tui: &mut TuiWidget, cr_tool: &str, remote: &str) -> Result<()> {
     let git = Git::new();
     let cr_service = review_service_for(cr_tool)?.unwrap();
 
@@ -34,7 +34,7 @@ pub async fn submit(tui: &mut TuiWidget, cr_tool: &str, remote: &str) -> Result<
    Ok(())
 }
 
-async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Review>, Box<dyn Error>> {
+async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Review>> {
     let git = Git::new();
     let parent = git.parent_of(&branch, BranchType::Local)?;
 
@@ -87,7 +87,7 @@ async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>,
     Ok(reviews)
 }
 
-fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>, Box<dyn Error>> {
+fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>> {
     let git = Git::new();
     let raw_commit_messages = &git.log(vec![&format!("{}..{}", parent, branch), "--format=%B"])?.join("\n");
 
@@ -102,7 +102,7 @@ fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>, Box<dyn
     Ok(commit_messages)
 }
 
-fn push_branch(remote: &str, branch: &str) -> Result<(), Box<dyn Error>> {
+fn push_branch(remote: &str, branch: &str) -> Result<()> {
     let git = Git::new();
 
     // if we fail to push normal-like, let's try a force push before we give up
@@ -113,7 +113,7 @@ fn push_branch(remote: &str, branch: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn needs_submitting(branch: &str) -> Result<bool, Box<dyn Error>> {
+fn needs_submitting(branch: &str) -> Result<bool> {
     let git = Git::new();
     let parent = git.parent_of(&branch, BranchType::All)?;
     match parent {

@@ -1,4 +1,4 @@
-use std::error::Error;
+use anyhow::Result;
 use ratatui::buffer::Buffer;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
@@ -109,7 +109,7 @@ impl PromptState {
 }
 
 impl TuiWidget {
-    pub fn one_liner(&mut self, prompt: &str, default: Option<&str>) -> Result<String, Box<dyn Error>> {
+    pub fn one_liner(&mut self, prompt: &str, default: Option<&str>) -> Result<String> {
         self.enter()?;
 
         let mut input = match default {
@@ -145,11 +145,11 @@ impl TuiWidget {
         Ok(input.clone())
     }
 
-    pub fn prompt(&mut self, prompt: &str) -> Result<String, Box<dyn Error>> {
+    pub fn prompt(&mut self, prompt: &str) -> Result<String> {
         self.one_liner(prompt, None)
     }
 
-    fn capture_prompt_input() -> Result<EditorEvent, Box<dyn Error>> {
+    fn capture_prompt_input() -> Result<EditorEvent> {
         // Handle Input
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {

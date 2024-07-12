@@ -1,4 +1,4 @@
-use std::error::Error;
+use anyhow::{anyhow, Result};
 use std::sync::Arc;
 use async_trait::async_trait;
 use crate::{Review, ReviewService, ReviewState};
@@ -27,7 +27,7 @@ impl GithubReviewer {
         }
     }
 
-    async fn await_mergability(&self, pull: &PullRequest) -> Result<PullRequest, Box<dyn Error>> {
+    async fn await_mergability(&self, pull: &PullRequest) -> Result<PullRequest> {
         // Check whether the review can be merged
         let mut pull = pull.clone();
         for _ in 0..10 {
@@ -39,10 +39,10 @@ impl GithubReviewer {
 
         if pull.mergeable.is_some() { return Ok(pull); }
 
-        Err(format!("Could not determine mergeability for PR: {}", pull.number).into())
+        Err(anyhow!("Could not determine mergeability for PR: {}", pull.number).into())
     }
 
-    async fn with_check_runs(&self, pull: &PullRequest) -> Result<PullRequestWithChecks, Box<dyn Error>> {
+    async fn with_check_runs(&self, pull: &PullRequest) -> Result<PullRequestWithChecks> {
 
         let checks = self.client.checks(&self.owner, &self.repo)
             .list_check_runs_for_git_ref(Commitish::from(pull.head.sha.clone())).send().await.unwrap();
@@ -50,7 +50,7 @@ impl GithubReviewer {
         Ok(PullRequestWithChecks { pull: pull.clone(), checks: checks.check_runs })
     }
 
-    async fn convert_to_review(&self, pull: PullRequest) -> Result<Review, Box<dyn Error>> {
+    async fn convert_to_review(&self, pull: PullRequest) -> Result<Review> {
         let pull = self.await_mergability(&pull).await?;
         let prc = self.with_check_runs(&pull).await?;
 
@@ -110,7 +110,7 @@ fn state_of_review(prc: &PullRequestWithChecks) -> ReviewState {
 
 #[async_trait]
 impl ReviewService for GithubReviewer {
-    async fn reviews(&self) -> Result<Vec<Review>, Box<dyn Error>> {
+    async fn reviews(&self) -> Result<Vec<Review>> {
         let data = self.client
             .pulls(&self.owner, &self.repo)
             .list()
@@ -127,7 +127,7 @@ impl ReviewService for GithubReviewer {
         Ok(reviews)
     }
 
-    async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>, Box<dyn Error>> {
+    async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>> {
         Ok(self.reviews().await?
             .into_iter()
             .filter(|review| review.branch == branch)
@@ -135,7 +135,7 @@ impl ReviewService for GithubReviewer {
             .collect())
     }
 
-    async fn review(&self, id: &str) -> Result<Option<Review>, Box<dyn Error>> {
+    async fn review(&self, id: &str) -> Result<Option<Review>> {
         let pr = self.client
             .pulls(&self.owner, &self.repo)
             .get(id.parse::<u64>()?)
@@ -143,7 +143,7 @@ impl ReviewService for GithubReviewer {
         Ok(Some(self.convert_to_review(pr).await?))
     }
 
-    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review, Box<dyn Error>> {
+    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review> {
         let handler = self.client.pulls(&self.owner, &self.repo);
         let pull = handler
             .create(title, branch, parent)

@@ -1,9 +1,9 @@
-use std::error::Error;
+use anyhow::Result;
 use colored::Colorize;
 use gr_git::{BranchType, Git};
 use gr_tui::TuiWidget;
 
-pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn Error>> {
+pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<()> {
     let git = Git::new();
     match command {
         "bu" | "up" => { move_up(tui, &git)?; },
@@ -28,7 +28,7 @@ pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<(), Box<dyn E
     Ok(())
 }
 
-fn move_down(git: &Git) -> Result<(), Box<dyn Error>> {
+fn move_down(git: &Git) -> Result<()> {
     let cur_branch = git.current_branch()?;
 
     let parent = git.parent_of(&cur_branch, BranchType::Local)?;
@@ -40,7 +40,7 @@ fn move_down(git: &Git) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn move_up(tui: &mut TuiWidget, git: &Git) -> Result<(), Box<dyn Error>> {
+fn move_up(tui: &mut TuiWidget, git: &Git) -> Result<()> {
     let cur_branch= git.current_branch()?;
 
     let children = git.children_of(&cur_branch)?;

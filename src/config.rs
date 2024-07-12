@@ -1,4 +1,4 @@
-use std::error::Error;
+use anyhow::Result;
 use std::fmt::{Display, Formatter};
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
@@ -43,7 +43,7 @@ pub struct GRConfig {
     pub branches: Vec<GrConfBranch>,
 }
 
-pub fn read_config() -> Result<GRConfig, Box<dyn Error>> {
+pub fn read_config() -> Result<GRConfig> {
     let config_file_path = format!("{}/config.toml", config_dir_path()?);
     let config = std::fs::read_to_string(config_file_path)?;
     let config: GRConfig = toml::from_str(&config)?;
@@ -54,7 +54,7 @@ pub fn config_file_exists(conf_file_path: &str) -> bool {
     std::path::Path::new(conf_file_path).exists()
 }
 
-pub fn config_dir_path() -> Result<String, Box<dyn Error>> {
+pub fn config_dir_path() -> Result<String> {
     // Get the user's home directory
     let home = home_dir().unwrap();
     // the current working directory

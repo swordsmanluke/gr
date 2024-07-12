@@ -1,4 +1,4 @@
-use std::error::Error;
+use anyhow::{anyhow, Result};
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
 use ratatui::style::Stylize;
@@ -73,7 +73,7 @@ impl SelectionState {
 
 impl TuiWidget {
 
-    pub fn yn(&mut self, prompt: &str) -> Result<bool, Box<dyn Error>> {
+    pub fn yn(&mut self, prompt: &str) -> Result<bool> {
         let selection = self.select_one(prompt,vec!["Yes".into(), "No".into()])?;
         match selection {
             Some(choice) => Ok(choice == "Yes"),
@@ -81,7 +81,7 @@ impl TuiWidget {
         }
     }
 
-    pub fn select_one(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<String>, Box<dyn Error>> {
+    pub fn select_one(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<String>> {
         let selections = self.select(options, Some(prompt), false, true)?;
         match selections {
             Some(mut selections) => Ok(selections.pop()),
@@ -89,13 +89,13 @@ impl TuiWidget {
         }
     }
 
-    pub fn select_many(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    pub fn select_many(&mut self, prompt: &str, options: Vec<String>) -> Result<Option<Vec<String>>> {
         self.select(options, Some(prompt), true, false)
     }
 
-    pub fn select(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    pub fn select(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>> {
         if options.is_empty() {
-            return Err("No options provided".into());
+            return Err(anyhow!("No options provided"));
         }
 
         self.enter()?;
@@ -105,7 +105,7 @@ impl TuiWidget {
         res
     }
 
-    fn perform_selection(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>, Box<dyn Error>> {
+    fn perform_selection(&mut self, options: Vec<String>, prompt: Option<&str>, multiple: bool, auto_select: bool) -> Result<Option<Vec<String>>> {
         let mut selected_options = Vec::new();
         if auto_select {
             selected_options.push(0);
@@ -150,7 +150,7 @@ impl TuiWidget {
         Ok(Some(selection_state.selected_options.iter().map(|i| options[*i].clone()).collect()))
     }
 
-    fn handle_selection_input(selection_state: &SelectionState) -> Result<SelectionEvent, Box<dyn Error>> {
+    fn handle_selection_input(selection_state: &SelectionState) -> Result<SelectionEvent> {
         // Handle Input
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {

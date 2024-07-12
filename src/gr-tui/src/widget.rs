@@ -1,4 +1,4 @@
-use std::error::Error;
+use anyhow::Result;
 use std::io::stdout;
 use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::ExecutableCommand;
@@ -15,7 +15,7 @@ impl TuiWidget {
         TuiWidget { terminal }
     }
 
-    pub fn enter(&mut self) -> Result<(), Box<dyn Error>>{
+    pub fn enter(&mut self) -> Result<()>{
         self.enter_alt_screen()?;
         self.enter_raw_mode()?;
         self.terminal.clear()?;
@@ -23,31 +23,31 @@ impl TuiWidget {
         Ok(())
     }
 
-    pub fn exit(&mut self) -> Result<(), Box<dyn Error>>{
+    pub fn exit(&mut self) -> Result<()>{
         self.exit_alt_screen()?;
         self.exit_raw_mode()?;
         self.terminal.show_cursor()?;
         Ok(())
     }
 
-    pub fn enter_raw_mode(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn enter_raw_mode(&mut self) -> Result<()> {
         self.terminal.hide_cursor()?;
         enable_raw_mode()?;
         Ok(())
     }
 
-    pub fn exit_raw_mode(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn exit_raw_mode(&mut self) -> Result<()> {
         self.terminal.show_cursor()?;
         disable_raw_mode()?;
         Ok(())
     }
 
-    pub fn enter_alt_screen(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn enter_alt_screen(&mut self) -> Result<()> {
         stdout().execute(EnterAlternateScreen)?;
         Ok(())
     }
 
-    pub fn exit_alt_screen(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn exit_alt_screen(&mut self) -> Result<()> {
         stdout().execute(LeaveAlternateScreen)?;
         Ok(())
     }

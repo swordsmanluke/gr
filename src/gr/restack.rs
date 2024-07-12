@@ -1,9 +1,9 @@
-use std::error::Error;
+use anyhow::Result;
 use colored::Colorize;
 use gr_git::{BranchType, Git};
 use gr_tui::symbols::{CHECK, CROSS};
 
-pub fn restack() -> Result<(), Box<dyn Error>> {
+pub fn restack() -> Result<()> {
     let git = Git::new();
 
     // Get the current branch
@@ -14,7 +14,7 @@ pub fn restack() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn sync(branch: &str) -> Result<(), Box<dyn Error>> {
+fn sync(branch: &str) -> Result<()> {
     let git = Git::new();
 
     // Is 'branch' local, or remote?
@@ -28,7 +28,7 @@ fn sync(branch: &str) -> Result<(), Box<dyn Error>> {
     let parent = git.parent_of(branch, BranchType::Local)?;
 
     // Update parent if any
-    let res: Result<(), Box<dyn Error>> = match parent {
+    let res: Result<()> = match parent {
         None => Ok(()),
         Some(onto) => {
             // Recurse: sync our parent
@@ -52,10 +52,10 @@ fn sync(branch: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn rebase(branch: &str) -> Result<(), Box<dyn Error>> {
+fn rebase(branch: &str) -> Result<()> {
     let git = Git::new();
     let onto = git.parent_of(branch, BranchType::All)?;
-    let res: Result<(), Box<dyn Error>> = match onto {
+    let res: Result<()> = match onto {
         Some(onto) => { git.rebase(branch, &onto)?; Ok(()) },
         None => Ok(()),
     };

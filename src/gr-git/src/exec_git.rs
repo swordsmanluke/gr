@@ -1,5 +1,5 @@
 /// 'exec's git commands, ending 'gr' and handing off control to 'git'
-use std::error::Error;
+use anyhow::Result;
 use exec::Command;
 
 pub struct ExecGit;
@@ -9,17 +9,17 @@ impl ExecGit {
         ExecGit {}
     }
 
-    pub fn status(&self) -> Result<(), Box<dyn Error>> {
+    pub fn status(&self) -> Result<()> {
         self.git("status", Vec::new())?;
         Ok(())
     }
 
-    pub fn commit(&self, args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    pub fn commit(&self, args: Vec<String>) -> Result<()> {
         self.git("commit", args)?;
         Ok(())
     }
 
-    fn git(&self, command: &str, args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    fn git(&self, command: &str, args: Vec<String>) -> Result<()> {
         let err = Command::new("git")
             .arg(command)
             .args(&*args)

@@ -4,10 +4,11 @@ mod github;
 
 use gr_git::Git;
 pub use review::*;
+use anyhow::{anyhow, Result};
 use crate::github::GithubReviewer;
 use crate::none::NoneReviewer;
 
-pub fn review_service_for(name: &str) -> Result<Option<Box<dyn ReviewService>>, String>
+pub fn review_service_for(name: &str) -> Result<Option<Box<dyn ReviewService>>>
 {
     if name == "None" {
         return Ok(Some(Box::new(NoneReviewer::new())));
@@ -17,7 +18,7 @@ pub fn review_service_for(name: &str) -> Result<Option<Box<dyn ReviewService>>, 
         return Ok(get_github_reviewer());
     }
 
-    return Err(format!("Unknown code review service: {}", name));
+    return Err(anyhow!("Unknown code review service: {}", name));
 }
 
 fn get_github_reviewer() -> Option<Box<dyn ReviewService>> {
