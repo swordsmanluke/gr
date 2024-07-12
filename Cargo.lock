@@ -60,6 +60,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
+
+[[package]]
 name = "arc-swap"
 version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -431,6 +437,7 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 name = "gr"
 version = "1.0.0"
 dependencies = [
+ "anyhow",
  "colored",
  "dirs",
  "gr-git",
@@ -447,6 +454,7 @@ dependencies = [
 name = "gr-git"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "colored",
  "exec",
  "regex",
@@ -456,6 +464,7 @@ dependencies = [
 name = "gr-reviews"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "colored",
  "gr-git",
@@ -468,6 +477,7 @@ dependencies = [
 name = "gr-tui"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "colored",
  "ratatui",
 ]

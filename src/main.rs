@@ -6,7 +6,6 @@ use std::error::Error;
 use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
-use gr_reviews::review_service_for;
 use gr::{initialize_gr, move_relative};
 use crate::gr::{restack, reviews, submit};
 
@@ -24,19 +23,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
         None => { println!("No argument provided"); Ok(()) },
     };
 
-    tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
+    let _ = tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
     println!(); // ...and we're done - return the result and exit.
 
-    if let Err(e) = res {
-        println!("Error occurred: {}", e.to_string().red());
-        return Err(e);
-    } else {
-        println!("{}", "Done".green());
-    }
-    Ok(())
+    // if let Err(e) = res {
+    //     println!("Error occurred: {}", e.to_string().red());
+    //     return Err(e);
+    // } else {
+    //     println!("{}", "Done".green());
+    // }
+    // Ok(())
+
+    res
 }
 
-async fn process_command(command: String, mut args: &mut Vec<String>, tui: &mut TuiWidget<'_>) -> Result<(), Box<dyn Error>>{
+async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<(), Box<dyn Error>>{
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {

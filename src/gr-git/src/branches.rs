@@ -48,12 +48,12 @@ impl Git {
     }
 
     pub fn parents(&self) -> Result<HashMap<String, String>, Box<dyn Error>> {
-        /// Formatted output of `git branch -vv` looks like this:
-        ///   main      483f881 Add: Branch movement commands
-        /// * movements 483f881 [main] Add: Branch movement commands
-        ///
-        /// Our regex here extracts the parent branch name from the output.
-        /// First group is the name of the branch, second group is the parent branch name
+        // Formatted output of `git branch -vv` looks like this:
+        //   main      483f881 Add: Branch movement commands
+        // * movements 483f881 [main] Add: Branch movement commands
+        //
+        // Our regex here extracts the parent branch name from the output.
+        // First group is the name of the branch, second group is the parent branch name
         self.assert_in_repo()?;
         let parent_regex = Regex::new(r"\s*(\S+\s+[a-f0-9]+)(\s+\[(.*)\])?\s+(.*)")?;
 

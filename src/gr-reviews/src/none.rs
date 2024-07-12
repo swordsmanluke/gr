@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::sync::Arc;
 use async_trait::async_trait;
 use crate::{Review, ReviewService};
 
@@ -18,15 +17,15 @@ impl ReviewService for NoneReviewer {
         Ok(vec![])
     }
 
-    async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>, Box<dyn Error>> {
+    async fn reviews_for(&self, _branch: &str) -> Result<Vec<Review>, Box<dyn Error>> {
         todo!()
     }
 
-    async fn review(&self, id: &str) -> Result<Option<Review>, Box<dyn Error>> {
+    async fn review(&self, _id: &str) -> Result<Option<Review>, Box<dyn Error>> {
         Ok(None)
     }
 
-    async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review, Box<dyn Error>> {
-        Ok((Review::default()))
+    async fn create_review(&self, _branch: &str, _parent: &str, _title: &str, _body: &str) -> Result<Review, Box<dyn Error>> {
+        Ok(Review::default())
     }
 }

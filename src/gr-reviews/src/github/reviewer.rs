@@ -1,21 +1,17 @@
-use itertools::Itertools;
 use std::error::Error;
 use std::sync::Arc;
 use async_trait::async_trait;
-use colored::Colorize;
 use crate::{Review, ReviewService, ReviewState};
 use octocrab;
 use octocrab::models::{IssueState};
 use octocrab::models::checks::CheckRun;
 use octocrab::models::pulls::PullRequest;
-use octocrab::Octocrab;
 use octocrab::params::repos::Commitish;
 
 pub struct GithubReviewer {
     client: Arc<octocrab::Octocrab>,
     owner: String,
-    repo: String,
-    page: u32
+    repo: String
 }
 
 struct PullRequestWithChecks {
@@ -28,7 +24,6 @@ impl GithubReviewer {
         GithubReviewer { client: octocrab::instance(),
             owner: gh_owner.to_string(),
             repo: gh_repo.to_string()
-            , page: 1
         }
     }
 

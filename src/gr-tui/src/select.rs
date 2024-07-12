@@ -1,5 +1,4 @@
 use std::error::Error;
-use colored::Colorize;
 use ratatui::crossterm::event;
 use ratatui::crossterm::event::{KeyCode, KeyEventKind};
 use ratatui::style::Stylize;
@@ -72,7 +71,7 @@ impl SelectionState {
     }
 }
 
-impl TuiWidget<'_> {
+impl TuiWidget {
 
     pub fn yn(&mut self, prompt: &str) -> Result<bool, Box<dyn Error>> {
         let selection = self.select_one(prompt,vec!["Yes".into(), "No".into()])?;
@@ -122,7 +121,7 @@ impl TuiWidget<'_> {
 
         loop {
             let options = Self::format_options(&options, &mut selection_state);
-            let mut prompt = Text::from(prompt.clone().unwrap_or(""));
+            let prompt = Text::from(prompt.clone().unwrap_or(""));
             let opt_text = Text::from(options.clone());
             let text = Text::from(vec![prompt.lines, opt_text.lines].concat());
             // Draw UI

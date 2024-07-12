@@ -2,7 +2,6 @@ mod review;
 mod none;
 mod github;
 
-use colored::Colorize;
 use gr_git::Git;
 pub use review::*;
 use crate::github::GithubReviewer;

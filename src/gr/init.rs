@@ -1,6 +1,4 @@
-use dirs::home_dir;
 use std::error::Error;
-use std::fmt::{Display, Formatter};
 use colored::Colorize;
 use gr_git::{BranchType, Git};
 use gr_tui::TuiWidget;

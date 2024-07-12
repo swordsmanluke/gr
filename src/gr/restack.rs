@@ -61,7 +61,7 @@ fn rebase(branch: &str) -> Result<(), Box<dyn Error>> {
     };
     let signal = match res {
         Ok(_) => CHECK.green(),
-        Err(e) => CROSS.red()
+        Err(_e) => CROSS.red()
     };
     println!("Updated {} {}", branch, signal);
     Ok(())

@@ -3,18 +3,16 @@ use std::io::stdout;
 use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::ExecutableCommand;
 use ratatui::crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
-use ratatui::prelude::Line;
 use ratatui::Terminal;
 
-pub struct TuiWidget<'a> {
-    pub(crate) terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
-    scrollback: Vec<Line<'a>>,
+pub struct TuiWidget {
+    pub(crate) terminal: Terminal<CrosstermBackend<std::io::Stdout>>
 }
 
-impl TuiWidget<'_> {
-    pub fn new() -> TuiWidget<'static> {
-        let mut terminal = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
-        TuiWidget { terminal, scrollback: Vec::new() }
+impl TuiWidget {
+    pub fn new() -> TuiWidget {
+        let terminal = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
+        TuiWidget { terminal }
     }
 
     pub fn enter(&mut self) -> Result<(), Box<dyn Error>>{
@@ -26,8 +24,8 @@ impl TuiWidget<'_> {
     }
 
     pub fn exit(&mut self) -> Result<(), Box<dyn Error>>{
-        self.exit_alt_screen();
-        self.exit_raw_mode();
+        self.exit_alt_screen()?;
+        self.exit_raw_mode()?;
         self.terminal.show_cursor()?;
         Ok(())
     }

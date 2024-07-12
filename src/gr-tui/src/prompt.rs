@@ -8,7 +8,7 @@ use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Widget, Paragraph, Clear};
 use crate::TuiWidget;
 
-enum EditorEvent {
+pub(crate) enum EditorEvent {
     Add(char),
     Left,
     Right,
@@ -19,7 +19,7 @@ enum EditorEvent {
     None,
 }
 
-enum PromptResult {
+pub(crate) enum PromptResult {
     Accept(String),
     Cancel,
     None, // Nothing happened... uet
@@ -108,14 +108,7 @@ impl PromptState {
     }
 }
 
-fn with_cursor<T>(tui: &mut TuiWidget, mut f: impl FnMut() -> Result<T, Box<dyn Error>>) -> Result<T, Box<dyn Error>> {
-    tui.terminal.show_cursor()?;
-    let r = f();
-    let _ = tui.terminal.hide_cursor();
-    r
-}
-
-impl<'a> TuiWidget<'a> {
+impl TuiWidget {
     pub fn one_liner(&mut self, prompt: &str, default: Option<&str>) -> Result<String, Box<dyn Error>> {
         self.enter()?;
 
