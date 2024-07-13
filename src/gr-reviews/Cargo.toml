@@ -19,3 +19,6 @@ gr-git = { path = "../gr-git" }
 # ...this is why we need async trait stuff. :(
 octocrab= "0.38.0"
 url = "2.5.2"
+rand = "0.9.0-alpha.1"
+serde = { version = "1.0.203", features = ["derive"] }
+tokio = "1.38.0"

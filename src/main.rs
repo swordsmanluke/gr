@@ -7,7 +7,7 @@ use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
-use crate::gr::{restack, reviews, submit};
+use crate::gr::{merge, restack, reviews, submit};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,7 +20,10 @@ async fn main() -> Result<()> {
 
     let res = match args.pop() {
         Some(command) => process_command(command, &mut args, &mut tui).await,
-        None => { println!("No argument provided"); Ok(()) },
+        None => {
+            println!("No argument provided");
+            Ok(())
+        }
     };
 
     let _ = tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
@@ -35,7 +38,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<()>{
+async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<()> {
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
@@ -43,7 +46,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
             git.switch(&branch)?;
             println!("Checked out branch: {}", branch.green());
             println!("{}", git.status()?.green());
-        },
+        }
         "bc" | "create" => {
             let cur_branch = git.current_branch()?;
             let branch = match args.pop() {
@@ -53,7 +56,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
 
             git.checkout(vec!["-t", &cur_branch, "-b", &branch])?;
             println!("Created branch: {}", branch.green());
-        },
+        }
         "cc" | "commit" => {
             let git = ExecGit::new();
             let mut new_args = Vec::new();
@@ -64,20 +67,24 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
         "init" => {
             initialize_gr(tui)?;
             println!("Initialized gr config");
-        },
+        }
+        "merge" => {
+            let conf = &config::read_config()?;
+            merge(tui, &conf.code_review_tool, &conf.origin).await?;
+        }
         "rv" | "reviews" => {
             let config = config::read_config()?;
             let revs = reviews(&config.code_review_tool).await?;
 
             for r in revs
             {
-                let url =match r.url {
+                let url = match r.url {
                     Some(url) => url.to_string(),
                     None => "".to_string(),
                 };
 
-                println!("{}: {}", r.id.cyan().bold(), r.state.to_string().yellow());
-                println!("  {}", r.title.blue());
+                println!("{} {}", r.title, format!("({})", r.state).yellow());
+                println!("  {} -> {}", r.branch.cyan(), r.base.magenta());
                 println!("  {}", url);
             }
         }
@@ -85,7 +92,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
             let cfg = config::read_config()?;
             submit(tui, &cfg.code_review_tool, &cfg.origin).await?;
             println!("{}", "Done".green());
-        },
+        }
         "sync" => {
             println!("{}", "Syncing current stack...".green());
             restack()?;
@@ -96,14 +103,14 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
             println!("Checked out branch: {}", git.current_branch()?.green());
             let egit = ExecGit::new();
             egit.status()?; // Exits gr and hands control to git
-        },
-        _ => { println!("Unknown command: {}", command) },
+        }
+        _ => { println!("Unknown command: {}", command) }
     }
     Ok(())
 }
 
 
-fn select_branch(tui: &mut TuiWidget) -> Result<String>{
+fn select_branch(tui: &mut TuiWidget) -> Result<String> {
     let git = Git::new();
     let branches = git.branch("")?;
     let options = branches.lines().map(|s| s.to_string()).collect();

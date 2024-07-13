@@ -1,5 +1,5 @@
 
-use gr_reviews::review_service_for;
+use gr_reviews::{CodeReviewService, review_service_for};
 use gr_reviews::ReviewService;
 use gr_reviews::Review;
 use anyhow::Result;
@@ -12,16 +12,16 @@ use regex::Regex;
 use crate::indent::Indentable;
 
 /// Retrieves the list of reviews for the current repo
-pub async fn reviews(cr_tool: &str) -> Result<Vec<Review>> {
-    let service = review_service_for(cr_tool)?.unwrap();
+pub async fn reviews(cr_tool: &CodeReviewService) -> Result<Vec<Review>> {
+    let service = review_service_for(cr_tool)?;
     service.reviews().await
 }
 
 /// Creates / Updates code reviews for the current stack of branches
 /// e.g. the current branch and all of its ancestors down to the root
-pub async fn submit(tui: &mut TuiWidget, cr_tool: &str, remote: &str) -> Result<()> {
+pub async fn submit(tui: &mut TuiWidget, cr_tool: &CodeReviewService, remote: &str) -> Result<()> {
     let git = Git::new();
-    let cr_service = review_service_for(cr_tool)?.unwrap();
+    let cr_service = review_service_for(cr_tool)?;
 
     println!("{}", "Submitting stack".green());
     // recursively, from the lowest branch, submit our branches

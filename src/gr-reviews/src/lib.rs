@@ -1,27 +1,41 @@
-mod review;
+mod code_review;
 mod none;
 mod github;
+mod merge_requests;
 
+use std::fmt::{Display, Formatter};
 use gr_git::Git;
-pub use review::*;
+pub use code_review::*;
 use anyhow::{anyhow, Result};
+use serde::{Deserialize, Serialize};
 use crate::github::GithubReviewer;
 use crate::none::NoneReviewer;
+pub use crate::merge_requests::{MergeRequest, MergeState};
 
-pub fn review_service_for(name: &str) -> Result<Option<Box<dyn ReviewService>>>
-{
-    if name == "None" {
-        return Ok(Some(Box::new(NoneReviewer::new())));
-    }
-
-    if name == "Github" {
-        return Ok(get_github_reviewer());
-    }
-
-    return Err(anyhow!("Unknown code review service: {}", name));
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum CodeReviewService {
+    Github,
+    None
 }
 
-fn get_github_reviewer() -> Option<Box<dyn ReviewService>> {
+impl Display for CodeReviewService {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CodeReviewService::None => write!(f, "None"),
+            CodeReviewService::Github => write!(f, "Github"),
+        }
+    }
+}
+
+pub fn review_service_for(service: &CodeReviewService) -> Result<Box<dyn ReviewService>>
+{
+    match service {
+        CodeReviewService::Github => Ok(get_github_reviewer()?),
+        CodeReviewService::None => Ok(Box::new(NoneReviewer::new()))
+    }
+}
+
+fn get_github_reviewer() -> Result<Box<dyn ReviewService>> {
     let git = Git::new();
 
     // use the remote url to determine if this is a github repo
@@ -29,8 +43,7 @@ fn get_github_reviewer() -> Option<Box<dyn ReviewService>> {
     let gh_remotes = remotes.into_iter().filter(|r| r.contains("github.com")).collect::<Vec<String>>();
 
     if gh_remotes.len() == 0 {
-        println!("No github remote found. Remotes: \n{}", git.remote(vec!["-v"]).unwrap());
-        return None;
+        return Err(anyhow!("No github remote found. Remotes: \n{}", git.remote(vec!["-v"]).unwrap()));
     }
 
     // Drop everything before "github.com/" to get the owner and repo names
@@ -41,5 +54,5 @@ fn get_github_reviewer() -> Option<Box<dyn ReviewService>> {
         .replace("/", "")
         .replace(".git", "");
 
-    Some(Box::new(GithubReviewer::new(&owner, &repo)))
+    Ok(Box::new(GithubReviewer::new(&owner, &repo)))
 }

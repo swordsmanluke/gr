@@ -2,25 +2,12 @@ use anyhow::Result;
 use std::fmt::{Display, Formatter};
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
+use gr_reviews::CodeReviewService;
 
 pub struct CRAuth {
     pub user: Option<String>,
     pub pass: Option<String>,
     pub token: Option<String>,
-}
-
-pub enum ReviewTool {
-    None,
-    Github,
-}
-
-impl Display for ReviewTool {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ReviewTool::None => write!(f, "None"),
-            ReviewTool::Github => write!(f, "Github"),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +22,7 @@ pub struct GrConfBranch {
 pub struct GRConfig {
     pub origin: String,
     pub root_branch: String,
-    pub code_review_tool: String,
+    pub code_review_tool: CodeReviewService,
     pub code_review_user: Option<String>,
     pub code_review_pass: Option<String>,
     pub code_review_key: Option<String>,

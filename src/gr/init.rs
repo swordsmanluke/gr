@@ -1,8 +1,9 @@
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_git::{BranchType, Git};
+use gr_reviews::CodeReviewService;
 use gr_tui::TuiWidget;
-use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig, ReviewTool};
+use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig };
 
 pub fn initialize_gr(tui: &mut TuiWidget) -> Result<()> {
     let git = Git::new();
@@ -36,7 +37,7 @@ pub fn initialize_gr(tui: &mut TuiWidget) -> Result<()> {
     let config = GRConfig {
         origin: remote.unwrap_or("".to_string()),
         root_branch: root_branch,
-        code_review_tool: cr_tool.to_string(),
+        code_review_tool: cr_tool,
         code_review_user: cr_auth.user,
         code_review_pass: cr_auth.pass,
         code_review_key: cr_auth.token,
@@ -68,10 +69,10 @@ fn build_gr_conf_branch(git: &Git, branch: &str) -> Result<GrConfBranch> {
     Ok(GrConfBranch { name: branch.to_string(), parent: git.parent_of(branch, BranchType::Local)?, remote_branch: None, review_id: None })
 }
 
-fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &ReviewTool) -> Result<CRAuth> {
+fn get_cr_auth(tui: &mut TuiWidget, cr_tool: &CodeReviewService) -> Result<CRAuth> {
     match cr_tool {
-        ReviewTool::None => Ok(CRAuth { user: None, pass: None, token: None }),
-        ReviewTool::Github => {
+        CodeReviewService::None => Ok(CRAuth { user: None, pass: None, token: None }),
+        CodeReviewService::Github => {
             // check for pre-configured env vars
             if let Ok(token) = std::env::var("GITHUB_TOKEN") {
                 if tui.yn("Found GITHUB_TOKEN in environment variables. Use it?".into())? {
@@ -114,11 +115,11 @@ fn select_remote(tui: &mut TuiWidget, git: &Git) -> Result<Option<String>> {
     Ok(Some(remote.clone()))
 }
 
-fn select_review_tool(tui: &mut TuiWidget) -> Result<ReviewTool> {
-    let tool_str = tui.select_one("Select your review tool:".into(), vec![ReviewTool::None.to_string(), ReviewTool::Github.to_string()])?.unwrap_or("None".to_string());
+fn select_review_tool(tui: &mut TuiWidget) -> Result<CodeReviewService> {
+    let tool_str = tui.select_one("Select your review tool:".into(), vec![CodeReviewService::None.to_string(), CodeReviewService::Github.to_string()])?.unwrap_or("None".to_string());
     let tool = match tool_str.as_str() {
-        "Github" => ReviewTool::Github,
-        _ => ReviewTool::None
+        "Github" => CodeReviewService::Github,
+        _ => CodeReviewService::None
     };
 
     let msg = format!("{} {}", "Review tool: ".green(), tool_str.clone().cyan());

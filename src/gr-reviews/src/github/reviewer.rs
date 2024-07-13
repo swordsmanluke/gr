@@ -1,8 +1,7 @@
 use anyhow::{anyhow, Result};
-use std::sync::Arc;
 use async_trait::async_trait;
 use colored::Colorize;
-use crate::{Review, ReviewService, ReviewState};
+use crate::{CodeReviewService, MergeRequest, Review, ReviewService, ReviewState};
 use octocrab;
 use octocrab::models::{IssueState};
 use octocrab::models::checks::CheckRun;
@@ -37,6 +36,7 @@ impl GithubReviewer {
         let mut pull = pull.clone();
         for _ in 0..10 {
             if pull.mergeable.is_some() { break; }
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             pull = self.client.pulls(&self.owner, &self.repo)
                 .get(pull.number)
                 .await.unwrap();
@@ -48,7 +48,6 @@ impl GithubReviewer {
     }
 
     async fn with_check_runs(&self, pull: &PullRequest) -> Result<PullRequestWithChecks> {
-
         let checks = self.client.checks(&self.owner, &self.repo)
             .list_check_runs_for_git_ref(Commitish::from(pull.head.sha.clone())).send().await.unwrap();
 
@@ -70,14 +69,14 @@ impl From<PullRequestWithChecks> for Review {
             // Number monotonically increases per repo - we want this as our ID
             id: prc.pull.number.to_string(),
             // Branch names
-            branch: prc.pull.head.label.unwrap().to_owned(),
-            base: prc.pull.base.label.unwrap().to_owned(),
+            branch: prc.pull.head.label.unwrap().split(":").last().unwrap().to_owned(),
+            base: prc.pull.base.label.unwrap().split(":").last().unwrap().to_owned(),
 
             // Title and body
             title: prc.pull.title.clone().unwrap_or(String::new()).to_owned(),
             body: prc.pull.body.clone().unwrap_or(String::new()).to_owned(),
             // Where is this review?
-            service: "github".to_string(),
+            service: CodeReviewService::Github,
             url: prc.pull.html_url.clone(),
 
             // What's its state?
@@ -115,6 +114,31 @@ fn state_of_review(prc: &PullRequestWithChecks) -> ReviewState {
 
 #[async_trait]
 impl ReviewService for GithubReviewer {
+    async fn merge(&self, id: &str) -> Result<MergeRequest> {
+        let pull = self.client
+            .pulls(&self.owner, &self.repo)
+            .get(id.parse::<u64>()?)
+            .await?;
+
+        let review = self.convert_to_review(pull).await?;
+        let msg = format!("{}\n\n{}", review.title, review.body);
+
+        self.client
+            .repos(&self.owner, &self.repo)
+            .merge(&review.branch, &review.base)
+            .commit_message(&msg)
+            .send().await?;
+        Ok(MergeRequest::new(review.clone()))
+    }
+
+    async fn review(&self, id: &str) -> Result<Option<Review>> {
+        let pr = self.client
+            .pulls(&self.owner, &self.repo)
+            .get(id.parse::<u64>()?)
+            .await?;
+        Ok(Some(self.convert_to_review(pr).await?))
+    }
+
     async fn reviews(&self) -> Result<Vec<Review>> {
         let data = self.client
             .pulls(&self.owner, &self.repo)
@@ -138,14 +162,6 @@ impl ReviewService for GithubReviewer {
             .filter(|review| review.branch == branch)
             .map(|review| review.clone())
             .collect())
-    }
-
-    async fn review(&self, id: &str) -> Result<Option<Review>> {
-        let pr = self.client
-            .pulls(&self.owner, &self.repo)
-            .get(id.parse::<u64>()?)
-            .await?;
-        Ok(Some(self.convert_to_review(pr).await?))
     }
 
     async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review> {

@@ -20,3 +20,10 @@ pub const UP_TRIANGLE: &str = "▲";
 pub const RIGHT_TRIANGLE: &str = "▶";
 pub const DOWN_TRIANGLE: &str = "▼";
 pub const LEFT_TRIANGLE: &str = "◀";
+
+// Escape Sequences for cursor movements and such
+pub const BACKSPACE: &str = "\x08";
+pub const UP: &str = "\x1b[A";
+pub const DOWN: &str = "\x1b[B";
+pub const RIGHT: &str = "\x1b[C";
+pub const LEFT: &str = "\x1b[D";

@@ -1,7 +1,8 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
 use url::Url;
+use crate::{CodeReviewService, MergeRequest, review_service_for};
 
 /// Represents the state of a code review
 #[derive(Clone, Default)]
@@ -45,58 +46,37 @@ pub struct ReviewTest {
 }
 
 /// Represents a code review
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Review {
     pub id: String,
     pub branch: String,
     pub base: String,
     pub title: String,
     pub body: String,
-    pub service: String,
+    pub service: CodeReviewService,
     pub reviewers: Vec<String>,
     pub state: ReviewState,
     pub tests: Vec<ReviewTest>,
     pub url: Option<Url>,
 }
 
-/// Functions which must be implemented by all code review objects
-/// e.g. this + Review struct
-pub trait TReview {
-    fn refresh(&mut self) -> Result<()>;
-    fn merge(&mut self) -> Result<MergeRequest>;
-    /*
-    // Github Review Merge
-    self.client
-            .repos(&self.owner, &self.repo)
-            .merge(branch, parent)
-            .commit_message("This is a custom merge-commit message")
-            .send()
-     */
-}
+impl Review {
+    pub async fn refresh(&mut self) -> Result<()> {
+        let service = review_service_for(&self.service)?;
+        *self = service.review(&self.id).await?.unwrap();
+        Ok(())
+    }
 
-/// Whether or not a given code review has been merged - but from the Merge Request's perspective
-pub enum MergeState {
-    Pending,
-    Merged
-}
-
-/// Tracks the state of a request to merge a Review
-pub struct MergeRequest
-{
-    pub state: MergeState,
-    review: Box<dyn TReview>,
-}
-
-/// Traits required for all merge requests
-pub trait TMergeRequest {
-    async fn refresh(&mut self) -> Result<()>;
-    fn state(&self) -> MergeState;
+    pub async fn merge(&self) -> Result<MergeRequest> {
+        review_service_for(&self.service)?.merge(&self.id).await
+    }
 }
 
 #[async_trait]
 pub trait ReviewService {
+    async fn merge(&self, id: &str) -> Result<MergeRequest>;
+    async fn review(&self, id: &str) -> Result<Option<Review>>;
     async fn reviews(&self) -> Result<Vec<Review>>;
     async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>>;
-    async fn review(&self, id: &str) -> Result<Option<Review>>;
     async fn create_review(&self, branch: &str, parent: &str, title: &str, body: &str) -> Result<Review>;
 }

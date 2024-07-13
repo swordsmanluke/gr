@@ -17,10 +17,20 @@ were already implemented and need to be ported to Rust.
 - [x] down: Move down one branch in the stack
 - [x] init: Initialize a new project
 - [ ] log: View the commit stack
-- [ ] merge: Merge a stack of approved PRs 
-- [ ] review: View open PRs for a given stack
-- [ ] submit: Recursively open PRs for the current stack
+- [x] merge: Merge a stack of approved PRs 
+  - [ ] validate req'd # of approvals met
+  - [ ] validate required checks passed
+  - [ ] allow optional checks to fail / be in progress
+  - [x] recursively tell GH to merge PRs
+- [x] review: View open PRs for a given stack
+  - [ ] Reformat output, it's kinda ugly
+- [x] submit: Recursively open PRs for the current stack
+  - [ ] Edit commit messages
+  - [x] Push to remote
+  - [x] Create review
 - [x] sync: Download remote contents, then recursively pull-rebase on parent branch(es)
+  - [ ] Auto-remove merged branches
+  - [ ] Reparent descendants after deleting merged branches
 - [x] top: Move to the top of the stack
 - [x] up: Move one branch up the stack
 
