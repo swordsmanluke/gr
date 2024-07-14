@@ -95,7 +95,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
         }
         "sync" => {
             println!("{}", "Syncing current stack...".green());
-            restack()?;
+            restack(tui)?;
             println!("{}", "Complete".green());
         }
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
@@ -112,7 +112,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
 
 fn select_branch(tui: &mut TuiWidget) -> Result<String> {
     let git = Git::new();
-    let branches = git.branch("")?;
+    let branches = git.branch(vec![])?;
     let options = branches.lines().map(|s| s.to_string()).collect();
 
     let selection = tui.select_one("Select a branch", options)?;

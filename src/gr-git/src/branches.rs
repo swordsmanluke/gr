@@ -42,9 +42,9 @@ impl Git {
         Ok(output)
     }
 
-    pub fn branch(&self, args: &str) -> Result<String> {
+    pub fn branch(&self, args: Vec<&str>) -> Result<String> {
         self.assert_in_repo()?;
-        self.git("branch", vec![args])
+        self.git("branch", args)
     }
 
     pub fn parents(&self) -> Result<HashMap<String, String>> {
@@ -57,7 +57,7 @@ impl Git {
         self.assert_in_repo()?;
         let parent_regex = Regex::new(r"\s*(\S+\s+[a-f0-9]+)(\s+\[(.*)\])?\s+(.*)")?;
 
-        let output = self.branch("-vv")?
+        let output = self.branch(vec!["-vv"])?
             .lines()
             .map(|s| parent_regex.captures(s))
             .filter(|cap| cap.is_some())

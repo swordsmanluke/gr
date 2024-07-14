@@ -25,24 +25,9 @@ impl Git {
         self.git("push", args)
     }
 
-    pub fn rebase(&self, branch: &str, base: &str) -> Result<String> {
+    pub fn rebase(&self, args: Vec<&str>) -> Result<String> {
         self.assert_in_repo()?;
-
-        if branch == base {
-            return Err(anyhow!("Cannot rebase onto self"));
-        }
-
-        if !self.branches()?.contains(&String::from(branch)) {
-            return Err(anyhow!("Branch {} does not exist", branch));
-        }
-
-        if base.contains("/") &&
-            self.remotes()?.iter().any(|remote| base.starts_with(remote)) {
-                self.git("rebase", vec![base])
-            }
-        else {
-            self.git("rebase", vec![base, branch])
-        }
+        self.git("rebase", args)
     }
 
     /***** Information *****/

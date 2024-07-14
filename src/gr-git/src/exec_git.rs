@@ -19,6 +19,13 @@ impl ExecGit {
         Ok(())
     }
 
+    pub fn pull(&self, args: Vec<String>) -> Result<()> {
+        self.git("pull", args)?;
+        Ok(())
+    }
+
+    // TODO: git mergetool?
+
     fn git(&self, command: &str, args: Vec<String>) -> Result<()> {
         let err = Command::new("git")
             .arg(command)

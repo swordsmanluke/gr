@@ -73,7 +73,10 @@ async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>,
 
     let mut commit_messages = get_commit_message(branch, &parent)?;
 
-    let title = commit_messages.remove(0);
+    let title = match commit_messages.get(0) {
+        Some(t) => t.to_string(),
+        None => "".to_string(),
+    };
     let title = tui.one_liner("Title", Some(&title))?;
     let body = commit_messages.join("\n");
 
