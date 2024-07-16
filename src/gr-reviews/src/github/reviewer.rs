@@ -49,9 +49,15 @@ impl GithubReviewer {
 
     async fn with_check_runs(&self, pull: &PullRequest) -> Result<PullRequestWithChecks> {
         let checks = self.client.checks(&self.owner, &self.repo)
-            .list_check_runs_for_git_ref(Commitish::from(pull.head.sha.clone())).send().await.unwrap();
+            .list_check_runs_for_git_ref(Commitish::from(pull.head.sha.clone())).send().await;
 
-        Ok(PullRequestWithChecks { pull: pull.clone(), checks: checks.check_runs })
+        let check_runs = match checks {
+            Ok(c) => c.check_runs,
+            Err(e) => Vec::new()
+        };
+
+
+        Ok(PullRequestWithChecks { pull: pull.clone(), checks: check_runs })
     }
 
     async fn convert_to_review(&self, pull: PullRequest) -> Result<Review> {
