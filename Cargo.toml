@@ -28,4 +28,6 @@ url = "2.5.2"
 # Async engine
 tokio = { version = "1.0.0", features = ["rt", "rt-multi-thread", "macros"] }
 regex = "1.10.5"
+itertools = "0.13.0"
+log = "0.4.22"
 

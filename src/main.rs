@@ -7,7 +7,7 @@ use colored::Colorize;
 use gr_tui::TuiWidget;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
-use crate::gr::{merge, restack, reviews, submit};
+use crate::gr::{merge, restack, reviews, submit, log};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -67,6 +67,9 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
         "init" => {
             initialize_gr(tui)?;
             println!("Initialized gr config");
+        }
+        "log" => {
+            log()?;
         }
         "merge" => {
             let conf = &config::read_config()?;

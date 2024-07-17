@@ -443,6 +443,8 @@ dependencies = [
  "gr-git",
  "gr-reviews",
  "gr-tui",
+ "itertools 0.13.0",
+ "log",
  "regex",
  "serde",
  "tokio",

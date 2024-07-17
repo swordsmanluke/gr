@@ -3,6 +3,7 @@ mod r#move;
 mod restack;
 mod submit;
 mod merge;
+mod log;
 
 /// whoops - rust really doesn't like you overriding a keyword with a module name
 
@@ -12,3 +13,4 @@ pub use restack::restack;
 pub use submit::submit;
 pub use submit::reviews;
 pub use merge::merge;
+pub use log::log;
