@@ -191,7 +191,8 @@ impl Log {
 
 pub fn log() -> Result<()> {
     let mut log = Log::new();
-    log.call();
+    println!("LOG");
+    println!("{}", log.call()?);
     Ok(())
 }
 
