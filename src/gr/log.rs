@@ -5,6 +5,7 @@ use anyhow::Result;
 use colored::{Color, Colorize};
 use itertools::Itertools;
 use gr_git::{BranchType, Git};
+use gr_tui::symbols::SMALL_SQUARE;
 use crate::gr::log::color_cycle::ColorCycle;
 use crate::indent::Indentable;
 
@@ -45,13 +46,21 @@ impl LogBranch {
     }
 
     pub fn to_string(&self) -> String {
-        self.commits.iter().map(|c| c.to_string().indent(1)).collect::<Vec<_>>().join("\n")
+        let mut s = String::new();
+        s.push_str("| ");
+        s.push_str(&self.name);
+        s.push_str("\n---------------\n");
+        s.push_str(&self.commits.iter().map(|c| c.to_string().indent(1)).collect::<Vec<_>>().join("\n"));
+        s.indent(self.indent_level)
     }
 }
 
 impl LogCommit {
     pub fn to_string(&self) -> String {
-        format!("{} {}", self.sha.bright_black(), self.message)
+        match self.sha.len() {
+            0..=7 => format!("{} {}", self.sha.bright_black(), self.message),
+            _ => format!("{} {}", self.sha[0..7].bright_black(), self.message)
+        }
     }
 }
 
@@ -75,12 +84,9 @@ impl Log {
         // step three, sort by stack id, then depth
         self.sort_log_branches();
         // step four, convert to strings!
-        let mut output = String::new();
-        for branch in self.log_branches.iter() {
-            output += &branch.to_string();
-        }
+        let output = self.log_branches.iter().map(|b| b.to_string()).join("\n\n");
 
-        Ok(String::new())
+        Ok(output)
     }
 
     fn assign_stack_ids(&mut self) -> Result<()> {
@@ -182,8 +188,8 @@ impl Log {
 
     fn sort_log_branches(&mut self) {
         self.log_branches.sort_by(|a, b| {
-            a.stack_id.cmp(&b.stack_id)
-                .then_with(|| a.depth.cmp(&b.depth))
+            b.stack_id.cmp(&a.stack_id)
+                .then_with(|| b.depth.cmp(&a.depth))
         });
     }
 }
