@@ -47,11 +47,42 @@ impl LogBranch {
 
     pub fn to_string(&self) -> String {
         let mut s = String::new();
-        s.push_str("| ");
-        s.push_str(&self.name);
-        s.push_str("\n---------------\n");
-        s.push_str(&self.commits.iter().map(|c| c.to_string().indent(1)).collect::<Vec<_>>().join("\n"));
-        s.indent(self.indent_level)
+        // Output should be
+        // 1. combination of spices/pipes, to indicate the ancestry of branches
+        // 2. branch name
+        // 3. the first commit title of the branch
+        // 4. indented (by pipes then spaces) list of commits
+
+        /*
+        Ex:
+          | main-1 - long branch
+          |   (abc1234) - long branch
+          |
+          | | br-1-2 - feat: Widget reporting
+          | |   (faabc13) - fix: widget js
+          | |   (b471ac3) - feat: Widget reporting
+          | |
+          | | | br-1-1-1 - add: global widget tracker
+          | | |   (4361ca3) add: global widget tracker
+          | | |
+          | | | br-1-1 - add: widget dashboard
+          | | |   (5716abc) add: widget dashboard
+          | \ |
+          |  -| br-1 - fix: widgets
+          |   |   (1234abc) spec fixes
+          |   |   (54312ee) fix: widgets
+          \   |
+           ---| main - feat: Create widgets
+         */
+
+        // Header of <branch name> - <commit title>
+        let branch_header = format!("{} - {}", self.name, self.commits.first().unwrap().message);
+        // commit message block
+        let commit_strs = self.commits.iter().map(|c| c.to_string()).collect::<Vec<_>>().join("\n").indent(2);
+        // branch block
+        let branch_block = format!("{}\n{}\n", branch_header, commit_strs);
+
+        branch_block.indent_with("| ", self.indent_level)
     }
 }
 
@@ -83,7 +114,10 @@ impl Log {
         self.assign_stack_ids()?;
         // step three, sort by stack id, then depth
         self.sort_log_branches();
-        // step four, convert to strings!
+        // step four, set indentation level
+        self.set_indentation();
+
+        // finally, convert to strings!
         let output = self.log_branches.iter().map(|b| b.to_string()).join("\n\n");
 
         Ok(output)
@@ -104,6 +138,7 @@ impl Log {
         // e.g. if parent.stack = 0, child_1.stack = 0, child_2.stack = -1
 
         let roots = self.log_branches.iter().filter(|b| b.parent.is_none()).map(|b| b.name.clone()).collect_vec();
+        println!("Roots: {}", roots.join(", "));
         for root in roots {
             self.update_stack_ids(&root, 0)?;
         }
@@ -118,7 +153,8 @@ impl Log {
 
     fn update_stack_ids(&mut self, branch: &str, stack_id: isize) -> Result<()> {
         let mut log_branch = self.log_branches.iter_mut().find(|l| l.name == branch).unwrap();
-        if log_branch.stack_id > 0 { log_branch.stack_id = stack_id; }
+        log_branch.stack_id = stack_id;
+        println!("Setting {} stack to {}", log_branch.name, stack_id);
         let children = self.git.children_of(branch)?;
         match children.len() {
             0 => {},
@@ -192,12 +228,19 @@ impl Log {
                 .then_with(|| b.depth.cmp(&a.depth))
         });
     }
+
+    fn set_indentation(&mut self) {
+        let min_stack = self.log_branches.iter().map(|b| b.stack_id).min().unwrap_or(0);
+        println!("min stack_id: {}", min_stack);
+        let max_indent: usize = if min_stack < 0 { min_stack * -1 } else { 0 } as usize;
+        println!("max_indent: {}", max_indent);
+        for lb in self.log_branches.iter_mut() { lb.indent_level += max_indent; println!("{} indent: {}", lb.name, lb.indent_level) }
+    }
 }
 
 
 pub fn log() -> Result<()> {
     let mut log = Log::new();
-    println!("LOG");
     println!("{}", log.call()?);
     Ok(())
 }
