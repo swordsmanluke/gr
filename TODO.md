@@ -15,12 +15,11 @@ were already implemented and need to be ported to Rust.
 - [x] commit: Save your latest changes
 - [x] down: Move down one branch in the stack
 - [x] init: Initialize a new project
-- [ ] log: View the commit stack
+- [x] log: View the commit stack
 - [x] merge: Merge a stack of approved PRs 
   - [ ] BUG: Could not determine mergeability for PR
-  - [ ] validate req'd # of approvals met
-  - [ ] validate required checks passed
-  - [ ] allow optional checks to fail / be in progress
+  - [ ] BUG: Fails to merge multiple PRs 
+  - [ ] Check Mergeability (see Connect with Github below)
   - [x] recursively tell GH to merge PRs
 - [x] review: View open PRs for a given stack
   - [x] Reformat output, it's kinda ugly
@@ -34,6 +33,54 @@ were already implemented and need to be ported to Rust.
   - [x] Reparent descendants after deleting merged branches
 - [x] top: Move to the top of the stack
 - [x] up: Move one branch up the stack
+
+
+## Improve UI
+The UI is inconsistent and bad right now. Let's polish this up a bit!
+
+- [ ] Log
+  - [ ] colors are wrong
+  - [ ] stack order is inconsistent
+  - [ ] stack moves right when it doesn't have to
+       - [ ] "left"-only branches still indent instead of creating pipes
+       - NOTE: since we have tries, not BSTs, we need to differentiate between "root", "fork", "pipe" and "leaf"
+  - [ ] consider splitting output by "stack"
+
+- [ ] General "Task progress" widget:  <name> - <spinner> -> <name> - <status>
+
+- [ ] Submit
+  - [ ] Gather User's desired operations, _then_ show 'submit' progress per branch
+
+- [ ] Merge
+  - [ ] Gather User's desired operations, _then_ show 'merge' progress per branch
+  - [ ] Sync after merging
+
+- [ ] General
+  - [ ] Commit to Ratatui or try something else
+  - [ ] Color scheme
+  - [ ] Unified "widgets" for each main type in GQ
+    - [ ] Branch (w/w-out commits)
+    - [ ] commit shortline
+    - [ ] confirmation prompt
+    - [ ] input prompt
+    - [ ] editor launcher
+
+## Internals
+General improvements / refactors to consider
+
+- [ ] Generic "tool" system to accelerate adding new backends, etc
+  - [ ] Supported tool types (vcs / code review / ci-cd)
+  - [ ] Supported tools per type
+    - [x] VCS: git
+    - [ ] CR:  github
+    - [ ] CR:  gitlab
+    - [ ] CICD: CircleCI
+    - [ ] CICD: Jenkins
+  - [ ] Support "external script" types
+    - [ ] script must implement specific CLI args and return JSON
+        - e.g. a CR tool script wrapper must implement "create, merge, review"
+            and return results in JSON format
+
 
 ## Build out Git support
 To enable many of the features up there, we will need to ask
@@ -62,7 +109,7 @@ we want to support connecting to github (others in future, maybe!)
 - [x] list all PRs
 - [x] retrieve a PR's information
 - [ ] check a PR's mergeability 
-  - [ ] no conflicts
+  - [x] no conflicts
   - [ ] required checks passed
   - [ ] required # of approvals met
 - [x] merge a PR
