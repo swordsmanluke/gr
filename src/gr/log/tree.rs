@@ -65,8 +65,7 @@ impl<T: Display + Clone + WithChildren> Tree<T> {
     fn dfs_stringify(&self, root: &Node<T>) -> String {
         let mut color_cycle = ColorCycle::new();
         let mut out = root.to_string();
-        let last_sib = root.children.len() - 1;
-        let color = self.color_cycle.color();
+        let last_sib = match root.children.len() { 0|1 => 0, _ => root.children.len() - 1};
         for i in 0..root.children.len() {
             let c = &root.children[i];
             out = format!("{}\n{}", self.dfs_traverse_node(c, "", i < last_sib, &mut color_cycle).iter().rev().join("\n"), out);
