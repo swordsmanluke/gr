@@ -32,6 +32,15 @@ impl Git {
         self.git("rev-parse", vec!["--abbrev-ref", "HEAD"])
     }
 
+    pub fn root_branches(&self) -> Result<Vec<String>> {
+        self.assert_in_repo()?;
+        let mut roots = Vec::new();
+        for b in self.branches()? {
+            if self.parent_of(&b, BranchType::Local)?.is_none() { roots.push(b.clone()) }
+        }
+        Ok(roots)
+    }
+
     pub fn branches(&self) -> Result<Vec<String>> {
         self.assert_in_repo()?;
         let output = self.git("for-each-ref", vec!["--format=%(refname:short)", "refs/heads/"])?

@@ -2,6 +2,8 @@ mod gr;
 mod config;
 mod indent;
 
+use std::env;
+use std::path::Path;
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_tui::TuiWidget;
@@ -11,6 +13,11 @@ use crate::gr::{merge, restack, reviews, submit, log};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+
+    // for testing
+    let root = Path::new("/home/lucas/workspace/vigilant-octo-meme");
+    assert!(env::set_current_dir(&root).is_ok());
+
     let mut tui = TuiWidget::new();
 
     // Read the arguments from the command line

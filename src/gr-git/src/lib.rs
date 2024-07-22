@@ -48,6 +48,11 @@ impl Git {
         self.git("rev-list", args)
     }
 
+    pub fn rev_parse(&self, args: Vec<&str>) -> Result<String> {
+        self.assert_in_repo()?;
+        self.git("rev-parse", args)
+    }
+
     pub fn status(&self) -> Result<String> {
         self.assert_in_repo()?;
         self.git("status", vec![""])
