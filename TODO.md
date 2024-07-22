@@ -68,6 +68,10 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
 ## Internals
 General improvements / refactors to consider
 
+- [ ] Merge order
+  = [ ] Bottom Up (1 merge to main per PR)
+  - [ ] Top Down (1 merge to main, squashing PRs down as we go)
+
 - [ ] Generic "tool" system to accelerate adding new backends, etc
   - [ ] Supported tool types (vcs / code review / ci-cd)
   - [ ] Supported tools per type
