@@ -19,8 +19,10 @@ were already implemented and need to be ported to Rust.
 - [x] merge: Merge a stack of approved PRs 
   - [ ] Check Mergeability (see Connect with Github below)
   - [x] recursively tell GH to merge PRs
+- [ ] move: Change the parent of the current branch and rebase
 - [x] review: View open PRs for a given stack
   - [x] Reformat output, it's kinda ugly
+- [ ] split: Divide commits in a branch into N branches
 - [x] submit: Recursively open PRs for the current stack
   - [x] Edit commit title
   - [ ] Edit commit message
