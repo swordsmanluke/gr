@@ -17,8 +17,6 @@ were already implemented and need to be ported to Rust.
 - [x] init: Initialize a new project
 - [x] log: View the commit stack
 - [x] merge: Merge a stack of approved PRs 
-  - [ ] BUG: Could not determine mergeability for PR
-  - [ ] BUG: Fails to merge multiple PRs 
   - [ ] Check Mergeability (see Connect with Github below)
   - [x] recursively tell GH to merge PRs
 - [x] review: View open PRs for a given stack
@@ -68,6 +66,9 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
 ## Internals
 General improvements / refactors to consider
 
+- [ ] Bug: Editing Commit Title (during merge) doesn't display a cursor
+
+
 - [ ] Merge order
   = [ ] Bottom Up (1 merge to main per PR)
   - [ ] Top Down (1 merge to main, squashing PRs down as we go)
@@ -113,7 +114,7 @@ we want to support connecting to github (others in future, maybe!)
 - [x] list all PRs
 - [x] retrieve a PR's information
 - [ ] check a PR's mergeability 
-  - [x] no conflicts
+  - [x] wait to ensure there are no conflicts
   - [ ] required checks passed
   - [ ] required # of approvals met
 - [x] merge a PR
