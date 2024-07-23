@@ -20,6 +20,8 @@ struct PullRequestWithChecks {
     checks: Vec<CheckRun>
 }
 
+const BACKOFF_TIME_SECONDS : [u64; 10] = [1, 5, 5, 5, 5, 10, 10, 10, 30, 60];
+
 impl GithubReviewer {
     pub fn new(gh_owner: &str, gh_repo: &str) -> GithubReviewer {
         let token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN env variable is required");
@@ -34,9 +36,22 @@ impl GithubReviewer {
     async fn await_mergability(&self, pull: &PullRequest) -> Result<PullRequest> {
         // Check whether the review can be merged
         let mut pull = pull.clone();
-        for _ in 0..10 {
+        let mut backoff_time_idx: usize = 0;
+
+        // It can take minutes for the mergeability to be determined
+        for _ in 0..15 {
+            // Don't hang on merged PRs - they were clearly "mergeable"
+            if pull.merged_at.is_some() { pull.mergeable = Some(true); }
+
+            // Don't hang on closed PRs - they are clearly "unmergeable"
+            if pull.closed_at.is_some() { pull.mergeable = Some(false); }
+
             if pull.mergeable.is_some() { break; }
-            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+
+            let backoff_time = BACKOFF_TIME_SECONDS[backoff_time_idx];
+            backoff_time_idx = (backoff_time_idx + 1) % BACKOFF_TIME_SECONDS.len();
+            tokio::time::sleep(std::time::Duration::from_secs(backoff_time)).await;
+
             pull = self.client.pulls(&self.owner, &self.repo)
                 .get(pull.number)
                 .await.unwrap();
