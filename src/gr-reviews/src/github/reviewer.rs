@@ -120,10 +120,10 @@ fn state_of_review(prc: &PullRequestWithChecks) -> ReviewState {
 
 #[async_trait]
 impl ReviewService for GithubReviewer {
-    async fn merge(&self, id: &str) -> Result<MergeRequest> {
+    async fn merge(&self, review: &Review) -> Result<MergeRequest> {
         let pull = self.client
             .pulls(&self.owner, &self.repo)
-            .get(id.parse::<u64>()?)
+            .get(review.id.parse::<u64>()?)
             .await?;
 
         let review = self.convert_to_review(pull).await?;

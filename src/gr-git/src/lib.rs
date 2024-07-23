@@ -30,6 +30,21 @@ impl Git {
         self.git("rebase", args)
     }
 
+    pub fn sync(&self, branch: &str) -> Result<()> {
+        self.switch(branch)?;
+        self.pull(vec!["--rebase"])?;
+        for child in self.children_of(branch)? {
+            self.sync(&child)?;
+        }
+        self.switch(branch)?;
+        Ok(())
+    }
+
+    pub fn merge(&self, args: Vec<&str>) -> Result<String> {
+        self.assert_in_repo()?;
+        self.git("merge", args)
+    }
+
     /***** Information *****/
 
     pub fn in_repo(&self) -> Result<bool> {

@@ -68,13 +68,13 @@ impl Review {
     }
 
     pub async fn merge(&self) -> Result<MergeRequest> {
-        review_service_for(&self.service)?.merge(&self.id).await
+        review_service_for(&self.service)?.merge(&self).await
     }
 }
 
 #[async_trait]
 pub trait ReviewService {
-    async fn merge(&self, id: &str) -> Result<MergeRequest>;
+    async fn merge(&self, review: &Review) -> Result<MergeRequest>;
     async fn review(&self, id: &str) -> Result<Option<Review>>;
     async fn reviews(&self) -> Result<Vec<Review>>;
     async fn reviews_for(&self, branch: &str) -> Result<Vec<Review>>;
