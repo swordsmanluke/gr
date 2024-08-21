@@ -15,8 +15,10 @@ impl Selector {
     pub fn new(options: Vec<impl Into<String> + Clone>,
                multiselect: bool,
                page_size: usize) -> Selector {
+
         let cursor = 0;
-        let selections = vec![false; options.len()];
+        let mut selections = vec![false; options.len()];
+        if !multiselect { selections[cursor] = true; }
 
         Selector {
             options: options.iter().map(|o| (*o).clone().into()).collect_vec(),
@@ -34,6 +36,8 @@ impl Selector {
         }
 
         self.cursor = i;
+
+        if !self.multiselect { self.toggle(); }
 
         if !self.on_current_page(self.cursor) {
             self.page_to_cursor();
@@ -115,12 +119,13 @@ impl Selector {
             let cursor_at = i == self.cursor;
             let selected = self.selections[i];
 
-            let option = if selected { option.bold() } else { option.to_owned() };
-            let prefix = if cursor_at { ">" } else { " " };
+            let option = if selected { option.bold().green() } else { option.to_owned() };
+            let prefix = if cursor_at { ">".cyan() } else { " ".bold() };
 
             parts.push(format!("{} {}", prefix, option));
         }
-        parts.join("\n")
+        parts.push("".to_string());
+        parts.join("\n\r")
     }
 
     fn selected_count(&self) -> usize {

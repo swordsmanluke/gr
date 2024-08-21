@@ -68,7 +68,7 @@ impl GithubReviewer {
 
         let check_runs = match checks {
             Ok(c) => c.check_runs,
-            Err(e) => Vec::new()
+            Err(_) => Vec::new()
         };
 
 

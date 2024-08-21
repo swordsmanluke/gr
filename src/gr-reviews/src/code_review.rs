@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::fmt::{Display, Formatter};
 use async_trait::async_trait;
 use url::Url;
