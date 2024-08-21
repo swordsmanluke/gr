@@ -18,7 +18,6 @@ serde = { version = "1.0.130", features = ["derive"] }
 
 # Local crates
 candy  = { path = "src/candy" }
-gr-tui = { path = "src/gr-tui" }
 gr-git = { path = "src/gr-git" }
 gr-reviews = { path = "src/gr-reviews" }
 

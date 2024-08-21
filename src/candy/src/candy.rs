@@ -17,27 +17,28 @@ impl Candy {
         Candy {}
     }
 
-    fn goto(&mut self, x: u16, y: u16) {
+    fn goto(&self, x: u16, y: u16) {
         println!("\x1b[{};{}H", x, y)
     }
 
-    fn current_cursor_loc(&mut self) -> (u16, u16) {
+    fn current_cursor_loc(&self) -> (u16, u16) {
         let (x, y) = crossterm::cursor::position().unwrap();
         (x, y)
     }
 
-    fn clear_line(&mut self) {
+    fn clear_line(&self) {
         println!("\x1b[2K")
     }
 
-    fn reset_cur_line(&mut self) {
+    fn reset_cur_line(&self) {
         let (_x, y) = crossterm::cursor::position().unwrap();
         self.goto(0, y);
         self.clear_line();
     }
 
-    pub fn edit_line(&mut self, prompt: &str) -> CandyEvent {
-        let mut input = OneLineBuffer::new();
+    pub fn edit_line(&self, prompt: &str, default: Option<&str>) -> CandyEvent {
+        let text = if default.is_some() { default.unwrap().into() } else { String::new() };
+        let mut input = OneLineBuffer::new(text);
         loop {
             // Clear the current line then print the prompt
             self.reset_cur_line();
@@ -70,14 +71,29 @@ impl Candy {
         }
     }
 
-    pub fn choose_option(&mut self, prompt: &str, options: Vec<String>, multiple: bool) -> CandyEvent {
+    pub fn yn(&self, prompt: impl Into<String>) -> bool {
+        let event = self.select_one(prompt, vec!["y", "n"]);
+        match event {
+            CandyEvent::Submit(selected) => selected == "y",
+            _ => false,
+        }
+    }
+
+    pub fn select_one(&self, prompt: impl Into<String>, options: Vec<impl Into<String> + Clone>) -> CandyEvent {
+        let event = self.choose_option(prompt, options, false);
+        match event {
+            CandyEvent::Select(selections) => CandyEvent::Submit(selections.first().unwrap().to_string()),
+            e=> e,
+        }
+    }
+
+    pub fn choose_option(&self, prompt: impl Into<String>, options: Vec<impl Into<String> + Clone>, multiple: bool) -> CandyEvent {
         let block_size: u16 = 7;
         let mut selector = Selector::new(options, multiple, (block_size - 2) as usize);
+        let prompt = prompt.into();
 
         // Get us some room
         println!("{}", "\n".repeat(block_size as usize));
-
-
 
         loop {
             // Clear the current block, then print the prompt

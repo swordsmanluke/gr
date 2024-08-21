@@ -1,17 +1,18 @@
 use anyhow::Result;
 use colored::Colorize;
+use candy::candy::Candy;
+use candy::events::CandyEvent::Submit;
 use gr_git::{BranchType, Git};
-use gr_tui::TuiWidget;
 
-pub fn move_relative(tui: &mut TuiWidget, command: &str) -> Result<()> {
+pub fn move_relative(command: &str) -> Result<()> {
     let git = Git::new();
     match command {
-        "bu" | "up" => { move_up(tui, &git)?; },
+        "bu" | "up" => { move_up(&git)?; },
         "bd" | "down" => { move_down(&git)?; },
         "top" => {
             let mut cur_branch = git.current_branch()?;
             while git.children_of(&cur_branch)?.len() > 0 {
-                move_up(tui, &git)?;
+                move_up(&git)?;
                 cur_branch = git.current_branch()?
             }
         },
@@ -40,18 +41,18 @@ fn move_down(git: &Git) -> Result<()> {
     Ok(())
 }
 
-fn move_up(tui: &mut TuiWidget, git: &Git) -> Result<()> {
+fn move_up(git: &Git) -> Result<()> {
     let cur_branch= git.current_branch()?;
+    let candy = Candy::new();
 
     let children = git.children_of(&cur_branch)?;
     match children.len() {
         0 => { println!("{}", "You are already at the top of the stack".green()) },
         1 => { git.checkout(vec![&children[0]])? }
         _ => {
-            let child = tui.select_one("Which branch do you want to go up to?".into(), children)?;
-            match child {
-                None => {}, // canceled - do nothing.
-                Some(c) => { git.checkout(vec![&c])? }
+            match candy.select_one("Which branch do you want to go up to?", children) {
+                Submit(c) => { git.checkout(vec![&c])? }
+                _ => {}, // canceled - do nothing.
             }
         }
     }

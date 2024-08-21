@@ -7,9 +7,9 @@ pub(crate) struct OneLineBuffer {
 }
 
 impl OneLineBuffer {
-    pub fn new() -> OneLineBuffer {
+    pub fn new(text: impl Into<String>) -> OneLineBuffer {
         OneLineBuffer {
-            text: String::new(),
+            text: text.into(),
             cursor: 0
         }
     }

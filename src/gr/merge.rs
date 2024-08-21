@@ -1,13 +1,12 @@
 use std::thread::sleep;
 use std::time::Duration;
-use gr_reviews::{CodeReviewService, MergeRequest, MergeState, review_service_for, ReviewState};
+use gr_reviews::{CodeReviewService, MergeRequest, MergeState, review_service_for};
 use gr_reviews::ReviewService;
 use anyhow::Result;
 use colored::Colorize;
 use gr_git::Git;
 use gr_git::BranchType;
-use gr_tui::symbols::{BACKSPACE, CHECK, CROSS};
-use gr_tui::TuiWidget;
+use candy::symbols::{BACKSPACE, CHECK, CROSS};
 use crate::indent::Indentable;
 
 struct Pair<A, B> {
@@ -16,13 +15,13 @@ struct Pair<A, B> {
 }
 
 /// Merges approved / mergeable code reviews for the current stack of branches
-pub async fn merge(tui: &mut TuiWidget, cr_tool: &CodeReviewService, remote: &str) -> Result<()> {
+pub async fn merge(cr_tool: &CodeReviewService, remote: &str) -> Result<()> {
     let git = Git::new();
     let cr_service = review_service_for(cr_tool)?;
 
     println!("{}", "Merging stack".green());
     // recursively, from the lowest branch, merge our reviews
-    let mut merge_requests = merge_branch(tui, &cr_service, remote, &git.current_branch()?).await?;
+    let mut merge_requests = merge_branch(&cr_service, remote, &git.current_branch()?).await?;
 
     while !merge_requests.is_empty() {
         let mut pair = merge_requests.remove(0);
@@ -62,14 +61,14 @@ async fn track_mr_progress(mr: &mut MergeRequest) -> Result<()> {
     Ok(())
 }
 
-async fn  merge_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Pair<String, Option<MergeRequest>>>> {
+async fn  merge_branch(cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Pair<String, Option<MergeRequest>>>> {
     let git = Git::new();
     let parent = git.parent_of(&branch, BranchType::Local)?;
 
     // Recurse down the stack to the root branch before we continue
     let mut merge_requests = match parent.clone()
     {
-        Some(p) => Box::pin(merge_branch(tui, cr_service, remote, &p)).await?,
+        Some(p) => Box::pin(merge_branch(cr_service, remote, &p)).await?,
         None => Vec::new(),
     };
 

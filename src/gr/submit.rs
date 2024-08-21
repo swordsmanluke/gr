@@ -2,13 +2,14 @@
 use gr_reviews::{CodeReviewService, review_service_for};
 use gr_reviews::ReviewService;
 use gr_reviews::Review;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_git::Git;
 use gr_git::BranchType;
-use gr_tui::symbols::SMALL_SQUARE;
-use gr_tui::TuiWidget;
+use candy::symbols::SMALL_SQUARE;
 use regex::Regex;
+use candy::candy::Candy;
+use candy::events::CandyEvent::Submit;
 use crate::indent::Indentable;
 
 /// Retrieves the list of reviews for the current repo
@@ -19,13 +20,13 @@ pub async fn reviews(cr_tool: &CodeReviewService) -> Result<Vec<Review>> {
 
 /// Creates / Updates code reviews for the current stack of branches
 /// e.g. the current branch and all of its ancestors down to the root
-pub async fn submit(tui: &mut TuiWidget, cr_tool: &CodeReviewService, remote: &str) -> Result<()> {
+pub async fn submit(cr_tool: &CodeReviewService, remote: &str) -> Result<()> {
     let git = Git::new();
     let cr_service = review_service_for(cr_tool)?;
 
     println!("{}", "Submitting stack".green());
     // recursively, from the lowest branch, submit our branches
-    let reviews = submit_branch(tui, &cr_service, remote, &git.current_branch()?).await?;
+    let reviews = submit_branch(&cr_service, remote, &git.current_branch()?).await?;
 
     for rv in reviews {
         println!("  {}: {}", rv.id.cyan(), rv.url.unwrap().to_string().green());
@@ -34,14 +35,14 @@ pub async fn submit(tui: &mut TuiWidget, cr_tool: &CodeReviewService, remote: &s
    Ok(())
 }
 
-async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Review>> {
+async fn submit_branch(cr_service: &Box<dyn ReviewService>, remote: &str, branch: &str) -> Result<Vec<Review>> {
     let git = Git::new();
     let parent = git.parent_of(&branch, BranchType::Local)?;
 
     // Recurse down the stack to the root branch before we continue
     let mut reviews = match parent.clone()
     {
-        Some(p) => Box::pin(submit_branch(tui, cr_service, remote, &p)).await?,
+        Some(p) => Box::pin(submit_branch(cr_service, remote, &p)).await?,
         None => Vec::new(),
     };
     // Return unless we have a diff vs our parent to submit
@@ -77,11 +78,12 @@ async fn submit_branch(tui: &mut TuiWidget, cr_service: &Box<dyn ReviewService>,
         Some(t) => t.to_string(),
         None => "".to_string(),
     };
-    let title = tui.one_liner("Title", Some(&title))?;
+    let candy = Candy::new();
+    let Submit(title) = candy.edit_line("Title", Some(&title)) else { Err(anyhow!("Failed to edit title"))? };
     let body = commit_messages.join("\n");
 
     println!("{}\n\n{}", title.green(), body.indent(2).green());
-    if tui.yn("Create Review?")? {
+    if candy.yn("Create Review?") {
         let rv = cr_service.create_review(&branch, &parent, &title, &body).await?;
         reviews.push(rv);
     }

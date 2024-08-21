@@ -1,8 +1,8 @@
 use anyhow::Result;
 use colored::Colorize;
+use candy::candy::Candy;
+use candy::symbols::{CHECK, CROSS};
 use gr_git::{BranchType, ExecGit, Git};
-use gr_tui::symbols::{CHECK, CROSS};
-use gr_tui::TuiWidget;
 
 enum SyncStatus {
     Success,
@@ -23,7 +23,7 @@ impl SyncResult {
     pub fn status(&self) -> &SyncStatus { &self.b }
 }
 
-pub fn restack(tui: &mut TuiWidget) -> Result<()> {
+pub fn restack() -> Result<()> {
     let git = Git::new();
 
     // Get the current branch
@@ -36,7 +36,7 @@ pub fn restack(tui: &mut TuiWidget) -> Result<()> {
     // Try to fix any conflicts first
     for res in &results {
         match res.status() {
-            SyncStatus::ConflictWith(b) => { ask_to_fix_conflicts(tui, b, res.branch())?; }
+            SyncStatus::ConflictWith(b) => { ask_to_fix_conflicts(b, res.branch())?; }
             _ => continue
         }
     }
@@ -44,7 +44,7 @@ pub fn restack(tui: &mut TuiWidget) -> Result<()> {
     // Okay, if conflicts are all resolved, then delete merged branches
     for res in &results {
         match res.status() {
-            SyncStatus::NoDiff => ask_to_delete(res.branch(), tui)?,
+            SyncStatus::NoDiff => ask_to_delete(res.branch())?,
             _ => continue
         }
     }
@@ -52,7 +52,7 @@ pub fn restack(tui: &mut TuiWidget) -> Result<()> {
     Ok(())
 }
 
-fn ask_to_fix_conflicts(tui: &mut TuiWidget, parent: &str, branch: &str) -> Result<()> {
+fn ask_to_fix_conflicts(parent: &str, branch: &str) -> Result<()> {
     let git = Git::new();
     let exec_git = ExecGit::new();
 
@@ -64,7 +64,7 @@ fn ask_to_fix_conflicts(tui: &mut TuiWidget, parent: &str, branch: &str) -> Resu
     Ok(())
 }
 
-fn ask_to_delete(branch: &str, tui: &mut TuiWidget) -> Result<()> {
+fn ask_to_delete(branch: &str) -> Result<()> {
     let git = Git::new();
     let parent = match git.parent_of(branch, BranchType::Local)?{
         Some(p) => p,
@@ -72,7 +72,8 @@ fn ask_to_delete(branch: &str, tui: &mut TuiWidget) -> Result<()> {
     };
 
     // Ask the user if they want to delete the branch
-    if tui.yn(&format!("Delete branch {}?", branch.yellow()))? {
+    let candy = Candy::new();
+    if candy.yn(&format!("Delete branch {}?", branch.yellow())) {
         // Get our children and rebase them onto our parent
         let children = git.children_of(branch)?;
         for child in &children {

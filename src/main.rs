@@ -2,33 +2,31 @@ mod gr;
 mod config;
 mod indent;
 
-use std::env;
-use std::path::Path;
 use anyhow::{anyhow, Result};
 use colored::Colorize;
-use gr_tui::TuiWidget;
+use candy::candy::Candy;
+use candy::events::CandyEvent;
+use candy::events::CandyEvent::Select;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
 use crate::gr::{merge, restack, reviews, submit, log};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut tui = TuiWidget::new();
-
     // Read the arguments from the command line
     let mut args = std::env::args().collect::<Vec<String>>();
+    let candy = Candy::new();
     args.reverse();
     args.pop(); // Remove the first argument, which is the name of the program
 
     let res = match args.pop() {
-        Some(command) => process_command(command, &mut args, &mut tui).await,
+        Some(command) => process_command(command, &mut args, &candy).await,
         None => {
             println!("No argument provided");
             Ok(())
         }
     };
 
-    let _ = tui.exit_raw_mode();  // Not guaranteed to be in raw mode, but it's a good idea, just in case.
     println!(); // ...and we're done - return the result and exit.
 
     if let Err(e) = res {
@@ -40,11 +38,11 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiWidget) -> Result<()> {
+async fn process_command(command: String, args: &mut Vec<String>, candy: &Candy) -> Result<()> {
     let git = Git::new();
     match command.as_str() {
         "bco" | "switch" => {
-            let branch = args.first().unwrap_or(&select_branch(tui)?).to_owned();
+            let branch = args.first().unwrap_or(&select_branch()?).to_owned();
             git.switch(&branch)?;
             println!("Checked out branch: {}", branch.green());
             println!("{}", git.status()?.green());
@@ -53,7 +51,10 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
             let cur_branch = git.current_branch()?;
             let branch = match args.pop() {
                 Some(b) => b,
-                None => tui.prompt("Branch name: ")?,
+                None => match candy.edit_line("Branch name: ", None) {
+                    CandyEvent::Submit(b) => b,
+                    _ => return Err(anyhow!("No branch name provided")),
+                },
             };
 
             git.checkout(vec!["-t", &cur_branch, "-b", &branch])?;
@@ -67,7 +68,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
             // ExecGit should take over the process - we won't return here.
         }
         "init" => {
-            initialize_gr(tui)?;
+            initialize_gr()?;
             println!("Initialized gr config");
         }
         "log" => {
@@ -75,7 +76,7 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
         }
         "merge" => {
             let conf = &config::read_config()?;
-            merge(tui, &conf.code_review_tool, &conf.origin).await?;
+            merge(&conf.code_review_tool, &conf.origin).await?;
         }
         "rv" | "reviews" => {
             let config = config::read_config()?;
@@ -95,16 +96,16 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
         }
         "submit" => {
             let cfg = config::read_config()?;
-            submit(tui, &cfg.code_review_tool, &cfg.origin).await?;
+            submit(&cfg.code_review_tool, &cfg.origin).await?;
             println!("{}", "Done".green());
         }
         "sync" => {
             println!("{}", "Syncing current stack...".green());
-            restack(tui)?;
+            restack()?;
             println!("{}", "Complete".green());
         }
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
-            move_relative(tui, &command)?;
+            move_relative(&command)?;
             println!("Checked out branch: {}", git.current_branch()?.green());
             let egit = ExecGit::new();
             egit.status()?; // Exits gr and hands control to git
@@ -115,15 +116,16 @@ async fn process_command(command: String, args: &mut Vec<String>, tui: &mut TuiW
 }
 
 
-fn select_branch(tui: &mut TuiWidget) -> Result<String> {
+fn select_branch() -> Result<String> {
     let git = Git::new();
+    let candy = Candy::new();
     let branches = git.branch(vec![])?;
     let options = branches.lines().map(|s| s.to_string()).collect();
 
-    let selection = tui.select_one("Select a branch", options)?;
+    let selection = candy.choose_option("Select a branch", options, false);
 
     match selection {
-        Some(b) => Ok(b),
-        None => Err(anyhow!("No branch selected")),
+        Select(v) => Ok(v[0].clone()),
+        _ => Err(anyhow!("No branch selected")),
     }
 }
