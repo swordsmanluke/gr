@@ -19,3 +19,4 @@ src/gr-tui/target
 gr.iml
 src/gr-git/target
 src/gr-reviews/target
+src/candy/target
