@@ -2,11 +2,11 @@ use std::cmp::min;
 use itertools::Itertools;
 use crate::asni_mods::AnsiWrapper;
 
+#[derive(Clone)]
 pub(crate) struct Selector {
     options: Vec<String>,
     selections: Vec<bool>,
     multiselect: bool,
-    allow_none: bool,
     cursor: usize,
     page: usize,
     page_size: usize,
@@ -15,70 +15,86 @@ pub(crate) struct Selector {
 impl Selector {
     pub fn new(options: Vec<impl Into<String> + Clone>,
                multiselect: bool,
-               allow_none: bool,
                page_size: usize) -> Selector {
         let cursor = 0;
-        let mut selections = Vec::new();
-        for _ in options.iter() {
-            selections.push(false);
-        }
+        let selections = vec![false; options.len()];
+
         Selector {
             options: options.iter().map(|o| (*o).clone().into()).collect_vec(),
             selections,
             multiselect,
-            allow_none,
             cursor,
             page: 0,
             page_size,
         }
     }
 
-    pub fn up(&mut self) {
-        if self.cursor > 0 {
-            self.cursor -= 1;
+    pub fn move_to(&mut self, i: usize) {
+        if i >= self.options.len() && self.options.len() > 0 {
+            return self.move_to_end();
         }
+
+        self.cursor = i;
 
         if !self.on_current_page(self.cursor) {
             self.page_to_cursor();
+        }
+    }
+
+    pub fn move_to_beginning(&mut self) {
+        self.move_to(0)
+    }
+
+    pub fn move_to_end(&mut self) {
+        let i = match self.options.len() {
+            0 => 0,
+            _ => self.options.len() - 1
+        };
+        self.move_to(i)
+    }
+
+    pub fn up(&mut self) {
+        if self.cursor > 0 {
+            self.move_to(self.cursor - 1);
         }
     }
 
     pub fn down(&mut self) {
         if self.cursor < self.options.len() - 1 {
-            self.cursor += 1;
-        }
-
-        if !self.on_current_page(self.cursor) {
-            self.page_to_cursor();
+            self.move_to(self.cursor + 1);
         }
     }
 
     pub fn page_up(&mut self) {
         if self.cursor > self.page_size {
-            self.cursor -= self.page_size;
+            self.move_to(self.cursor - self.page_size);
         } else {
-            self.cursor = 0;
+            self.move_to_beginning();
         }
-
-        self.page_to_cursor();
     }
 
     pub fn page_down(&mut self) {
         if self.cursor + self.page_size < self.options.len() {
-            self.cursor += self.page_size;
+            self.move_to(self.cursor + self.page_size);
         } else {
-            if self.options.is_empty() {
-                self.cursor = 0;
-            } else {
-                self.cursor = self.options.len();
-            }
+            self.move_to_end();
         }
-
-        self.page_to_cursor();
     }
 
     pub fn toggle(&mut self) {
+        let toggling_on = !self.selections[self.cursor];
+
+        if toggling_on && self.selected_count() >= 1 {
+            if !self.multiselect {
+                self.delesect_all();
+            }
+        }
+
         self.selections[self.cursor] = !self.selections[self.cursor];
+    }
+
+    fn delesect_all(&mut self) {
+        self.selections = vec![false; self.options.len()];
     }
 
     pub fn selections(&self) -> Vec<String> {
@@ -100,13 +116,16 @@ impl Selector {
             let cursor_at = i == self.cursor;
             let selected = self.selections[i];
 
-            let option = if selected { option.bold() }
-                        else { option.to_owned() };
+            let option = if selected { option.bold() } else { option.to_owned() };
             let prefix = if cursor_at { ">" } else { " " };
 
             parts.push(format!("{} {}", prefix, option));
         }
         parts.join("\n")
+    }
+
+    fn selected_count(&self) -> usize {
+        self.selections.iter().filter(|s| **s).count()
     }
 
     fn on_current_page(&self, i: usize) -> bool {
@@ -115,15 +134,6 @@ impl Selector {
 
     fn page_range(&self) -> (usize, usize) {
         (self.page * self.page_size, (self.page + 1) * self.page_size)
-    }
-
-    fn page(&self, i: usize, size: usize) -> Vec<String> {
-        let page_start = i * size;
-        let page_end = min((i + 1) * size, self.options.len());
-
-        if page_start >= self.options.len() { return Vec::new(); }
-
-        self.options[page_start..page_end].to_vec()
     }
 
     fn page_to_cursor(&mut self) {
@@ -137,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_pagination_moves_cursor() {
-        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, false, 2);
+        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, 2);
         assert_eq!(selector.cursor, 0);
         assert_eq!(selector.page, 0);
 
@@ -152,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_page_follows_cursor() {
-        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, false, 2);
+        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, 2);
         assert_eq!(selector.page, 0);
         assert_eq!(selector.cursor, 0);
 
@@ -169,5 +179,26 @@ mod tests {
         selector.up();
         assert_eq!(selector.cursor, 1);
         assert_eq!(selector.page, 0);
+    }
+
+    #[test]
+    fn test_selection() {
+        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, 2);
+        selector.down(); // move to 'b'
+        selector.toggle(); // select 'b'
+
+        assert_eq!(selector.selections(), vec!["b"]);
+        assert_eq!(selector.selected_count(), 1);
+    }
+
+    #[test]
+    fn test_deselection() {
+        let mut selector = Selector::new(vec!["a", "b", "c", "d"], false, 2);
+        selector.down(); // move to 'b'
+        selector.toggle(); // select 'b'
+        selector.toggle(); // deselect 'b'
+
+        assert!(selector.selections().is_empty());
+        assert_eq!(selector.selected_count(), 0);
     }
 }

@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use itertools::Itertools;
 
 pub(crate) trait StrTools<T: Into<String>> {
     fn divide_at(&self, index: usize) -> Triple<String>;
