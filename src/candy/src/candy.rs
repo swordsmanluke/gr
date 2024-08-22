@@ -16,7 +16,7 @@ impl EnterRawMode {
     fn new() -> Self {
         let mut stdout = stdout();
         enable_raw_mode().expect("Failed to enable raw mode");
-        execute!(stdout, Hide, ScrollUp(2), MoveDown(1), MoveToColumn(0)).unwrap();
+        execute!(stdout, Hide).unwrap();
         Self {}
     }
 }
@@ -25,7 +25,7 @@ impl Drop for EnterRawMode {
     fn drop(&mut self) {
         disable_raw_mode().expect("Failed to disable raw mode");
         let mut stdout = stdout();
-        execute!(stdout, Show, ScrollUp(2), MoveDown(1), MoveToColumn(0)).unwrap();
+        execute!(stdout, Show, ScrollUp(1), MoveDown(1), MoveToColumn(0)).unwrap();
     }
 }
 
@@ -71,8 +71,8 @@ impl Candy {
         let text = if default.is_some() { default.unwrap().into() } else { String::new() };
         let mut input = OneLineBuffer::new(text);
         let enter_raw = EnterRawMode::new();
-        // We want to show the cursor, so do that first
-        execute!(stdout, Show).unwrap();
+        // We want to show the cursor, so do that first, then set up our cursor on the next line.
+        execute!(stdout, Show, ScrollUp(1), MoveDown(1), MoveToColumn(0)).unwrap();
         loop {
             // Clear the current line then print the prompt
             self.reset_cur_line();

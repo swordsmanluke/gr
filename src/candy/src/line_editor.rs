@@ -19,13 +19,7 @@ impl OneLineBuffer {
     }
 
     pub fn display(&self) -> String {
-        // display the text, making the cursor blink
-        let parts = self.text.divide_at(self.cursor);
-        let before = parts.left.unwrap_or(String::new());
-        let cursor = parts.middle.unwrap_or(String::new()).blink();
-        let after = parts.right.unwrap_or(String::new());
-
-        format!("{}{}{}", before, cursor, after)
+        self.text.clone()
     }
 
     pub fn clear(&mut self) {
