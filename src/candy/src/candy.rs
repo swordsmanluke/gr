@@ -1,7 +1,7 @@
 use std::io::{stdout, Write};
 use crossterm::{event, event::{Event, KeyCode}, execute};
-use crossterm::cursor::{MoveDown, MoveTo};
-use crossterm::terminal::{enable_raw_mode, disable_raw_mode, ScrollDown, Clear, ClearType};
+use crossterm::cursor::{Hide, MoveDown, MoveTo, MoveToColumn, Show};
+use crossterm::terminal::{enable_raw_mode, disable_raw_mode, ScrollDown, Clear, ClearType, ScrollUp};
 use crate::events::CandyEvent;
 use crate::line_editor::OneLineBuffer;
 use crate::selector::Selector;
@@ -12,16 +12,20 @@ pub struct Candy {}
 
 struct EnterRawMode {}
 
-impl Drop for EnterRawMode {
-    fn drop(&mut self) {
-        disable_raw_mode().expect("Failed to disable raw mode");
+impl EnterRawMode {
+    fn new() -> Self {
+        let mut stdout = stdout();
+        enable_raw_mode().expect("Failed to enable raw mode");
+        execute!(stdout, Hide, ScrollUp(2), MoveDown(1), MoveToColumn(0)).unwrap();
+        Self {}
     }
 }
 
-impl EnterRawMode {
-    fn new() -> Self {
-        enable_raw_mode().expect("Failed to enable raw mode");
-        Self {}
+impl Drop for EnterRawMode {
+    fn drop(&mut self) {
+        disable_raw_mode().expect("Failed to disable raw mode");
+        let mut stdout = stdout();
+        execute!(stdout, Show, ScrollUp(2), MoveDown(1), MoveToColumn(0)).unwrap();
     }
 }
 
@@ -47,7 +51,7 @@ impl Candy {
 
     fn scrolldown(&self, n:u16) {
         let mut stdout = stdout();
-        execute!(stdout, ScrollDown(n), MoveDown(n)).unwrap();
+        execute!(stdout, ScrollUp(n), MoveDown(n), MoveToColumn(0)).unwrap();
     }
 
     fn reset_cur_line(&self) {
@@ -59,17 +63,23 @@ impl Candy {
     fn puts(&self, text: impl Into<String>) {
         let mut stdout = stdout();
         write!(stdout, "{}", text.into()).unwrap();
+        stdout.flush().unwrap();
     }
 
     pub fn edit_line(&self, prompt: &str, default: Option<&str>) -> CandyEvent {
+        let mut stdout = stdout();
         let text = if default.is_some() { default.unwrap().into() } else { String::new() };
         let mut input = OneLineBuffer::new(text);
         let enter_raw = EnterRawMode::new();
+        // We want to show the cursor, so do that first
+        execute!(stdout, Show).unwrap();
         loop {
             // Clear the current line then print the prompt
             self.reset_cur_line();
-            self.puts(format!("{}: {}", prompt, input.display()));
-            // Read input in raw mode from Crossterm
+            self.puts(format!("{} {}", prompt, input.display()));
+
+            // Put the cursor where it should be
+            execute!(stdout, MoveTo((prompt.len() + input.cursor + 1) as u16, self.current_cursor_loc().1)).unwrap();
 
             if let Event::Key(event) = event::read().expect("Failed to read crossterm event") {
                 match event.code {
@@ -87,8 +97,14 @@ impl Candy {
                     KeyCode::Delete    => input.delete(),
 
                     // Submit/Cancel
-                    KeyCode::Enter => return CandyEvent::Submit(input.text().to_string()),
-                    KeyCode::Esc   => return CandyEvent::Cancel,
+                    KeyCode::Enter => {
+                        self.scrolldown(1);
+                        return CandyEvent::Submit(input.text().to_string());
+                    },
+                    KeyCode::Esc   => {
+                        self.scrolldown(1);
+                        return CandyEvent::Cancel
+                    },
 
                     // Unhandled
                     _ => {}
@@ -120,7 +136,6 @@ impl Candy {
 
         // Get us some room
         println!("{}", "\n\r".repeat(block_size as usize));
-        // self.scrolldown(block_size);
 
         let enter_raw = EnterRawMode::new();
 
@@ -132,7 +147,7 @@ impl Candy {
                 self.clear_line();
             }
 
-            self.puts(format!("{}:\n\r", prompt));
+            self.puts(format!("{}\n\r", prompt));
             self.puts(selector.display());
 
             block_size = (selector.display().lines().count() + 1) as u16;

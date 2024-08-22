@@ -3,7 +3,7 @@ use crate::str_tools::StrTools;
 
 pub(crate) struct OneLineBuffer {
     text: String,
-    cursor: usize
+    pub cursor: usize
 }
 
 impl OneLineBuffer {
