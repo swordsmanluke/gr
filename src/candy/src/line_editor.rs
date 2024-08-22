@@ -1,5 +1,4 @@
 use crate::asni_mods::AnsiWrapper;
-use crate::str_tools::StrTools;
 
 pub(crate) struct OneLineBuffer {
     text: String,
