@@ -4,6 +4,7 @@ mod restack;
 mod submit;
 mod merge;
 mod log;
+pub(crate) mod help;
 
 /// whoops - rust really doesn't like you overriding a keyword with a module name
 

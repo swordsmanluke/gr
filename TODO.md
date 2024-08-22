@@ -5,6 +5,12 @@ me keep track of what needs doing.
 The list is in alphabetical order, not order of importance
 so features may get done in a seemingly incoherent manner.
 
+## Next Steps
+- [ ] Add Help menu
+- [ ] Async widget support for status tracking
+- [ ] Find slowdowns in GQ
+- [ ] Add CircleCI support
+
 ## Port GQ Commands
 GQ is the previous version of this application. These commands
 were already implemented and need to be ported to Rust.
@@ -55,8 +61,13 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
   - [ ] Gather User's desired operations, _then_ show 'merge' progress per branch
   - [ ] Sync after merging
 
+- [ ] Stack / Feature Support
+  - [ ] feature tracking - link branches by prefix
+  - [ ] prefix format: /<name>/<feature>/#-<branch name>
+  - [ ] gq 'new' - creates a new branch prefix for a feature
+
 - [ ] General
-  - [ ] Commit to Ratatui or try something else
+  - [x] Commit to Ratatui or try something else
   - [ ] Color scheme
   - [ ] Unified "widgets" for each main type in GQ
     - [ ] Branch (w/w-out commits)
@@ -68,11 +79,10 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
 ## Internals
 General improvements / refactors to consider
 
-- [ ] Bug: Editing Commit Title (during merge) doesn't display a cursor
-
+- [x] Bug: Editing Commit Title (during merge) doesn't display a cursor
 
 - [ ] Merge order
-  = [ ] Bottom Up (1 merge to main per PR)
+  - [ ] Bottom Up (1 merge to main per PR)
   - [ ] Top Down (1 merge to main, squashing PRs down as we go)
 
 - [ ] Generic "tool" system to accelerate adding new backends, etc
@@ -134,3 +144,4 @@ to connect to CircleCI (others in future!) and track deploy status
 ## Other
 
 - [ ] Redo the command verbs. Switch either to override git-cmds for familiarity... or break clean.
+- [ ] Overhaul error message support

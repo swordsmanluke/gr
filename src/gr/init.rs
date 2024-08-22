@@ -6,6 +6,17 @@ use candy::candy::Candy;
 use candy::events::CandyEvent::{Cancel, Submit};
 use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig };
 
+pub(crate) const USAGE: &str = "gq init
+
+Configure (or reconfigure) gq.
+Collects (or sets) the following information:
+  - root branch
+  - preferred remote
+  - preferred code review tool
+      - auth token (if needed)
+
+The config file for gq is in ~/.config/gr/<project>/<cwd>/config.toml";
+
 pub fn initialize_gr() -> Result<()> {
     let git = Git::new();
     let candy = Candy::new();

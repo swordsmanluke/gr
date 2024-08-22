@@ -9,7 +9,10 @@ use candy::events::CandyEvent;
 use candy::events::CandyEvent::Select;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
-use crate::gr::{merge, restack, reviews, submit, log};
+use crate::gr::{merge, restack, reviews, submit, log, help};
+use help::{show_usage, show_help};
+
+
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -66,6 +69,12 @@ async fn process_command(command: String, args: &mut Vec<String>, candy: &Candy)
             args.into_iter().for_each(|s| new_args.insert(0, s.to_owned()));
             git.commit(new_args)?;
             // ExecGit should take over the process - we won't return here.
+        }
+        "help" => {
+            match args.first() {
+                Some(arg) => show_help(arg),
+                None => show_usage(),
+            }
         }
         "init" => {
             initialize_gr()?;

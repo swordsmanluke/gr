@@ -12,6 +12,21 @@ use crate::github::GithubReviewer;
 use crate::none::NoneReviewer;
 pub use crate::merge_requests::{MergeRequest, MergeState};
 
+pub const REVIEW_USAGE: &str = "gq <reviews | rv>
+
+List all open code reviews for the current repo.";
+
+pub const MERGE_USAGE: &str = "gq merge
+
+Merge approved / mergeable code reviews for the current stack.
+PRs will be merged in bottom-up order, with each PR being squashed before merging.
+
+Any PRs that are unable to be merged will cause the command to exit with an error.
+
+Successfully merged branches will have their local branch deleted and their
+children will be moved to the parent.
+";
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum CodeReviewService {
     Github,
