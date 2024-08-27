@@ -2,6 +2,7 @@ use std::io::{stdout, Write};
 use crossterm::{event, event::{Event, KeyCode}, execute};
 use crossterm::cursor::{Hide, MoveDown, MoveTo, MoveToColumn, Show};
 use crossterm::terminal::{enable_raw_mode, disable_raw_mode, ScrollDown, Clear, ClearType, ScrollUp};
+use crate::asni_mods::AnsiWrapper;
 use crate::events::CandyEvent;
 use crate::line_editor::OneLineBuffer;
 use crate::selector::Selector;
@@ -9,6 +10,36 @@ use crate::selector::Selector;
 // Candy is a simple TUI crate for rust. It provides a simple way to create
 // interactive TUIs in a simple and straightforward way.
 pub struct Candy {}
+
+pub trait CandyOption {
+    fn id(&self) -> String;
+    fn render(&self, index: usize, cursor_at: usize, selections: &Vec<bool>) -> String;
+}
+
+impl CandyOption for &str {
+    fn id(&self) -> String {
+        self.to_string()
+    }
+
+    fn render(&self, index: usize, cursor_at: usize, selections: &Vec<bool>) -> String {
+        self.to_string().render(index, cursor_at, selections)
+    }
+}
+
+impl CandyOption for String {
+    fn id(&self) -> String {
+        self.clone()
+    }
+
+    fn render(&self, index: usize, cursor_at: usize, selections: &Vec<bool>) -> String {
+        let mut out = self.to_string();
+        if index == cursor_at { out = out.bold(); }
+        if selections[index] { out = out.green(); }
+
+        out.to_string()
+    }
+}
+
 
 struct EnterRawMode {}
 
@@ -121,7 +152,7 @@ impl Candy {
         }
     }
 
-    pub fn select_one(&self, prompt: impl Into<String>, options: Vec<impl Into<String> + Clone>) -> CandyEvent {
+    pub fn select_one(&self, prompt: impl Into<String>, options: Vec<impl CandyOption + 'static>) -> CandyEvent {
         let event = self.choose_option(prompt, options, false);
         match event {
             CandyEvent::Select(selections) => CandyEvent::Submit(selections.first().unwrap().to_string()),
@@ -129,7 +160,7 @@ impl Candy {
         }
     }
 
-    pub fn choose_option(&self, prompt: impl Into<String>, options: Vec<impl Into<String> + Clone>, multiple: bool) -> CandyEvent {
+    pub fn choose_option(&self, prompt: impl Into<String>, options: Vec<impl CandyOption + 'static>, multiple: bool) -> CandyEvent {
         let mut block_size: u16 = 7;
         let mut selector = Selector::new(options, multiple, (block_size - 2) as usize);
         let prompt = prompt.into();

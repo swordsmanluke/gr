@@ -1,9 +1,9 @@
 use itertools::Itertools;
 use crate::asni_mods::AnsiWrapper;
+use crate::candy::CandyOption;
 
-#[derive(Clone)]
 pub(crate) struct Selector {
-    options: Vec<String>,
+    options: Vec<Box<dyn CandyOption>>,
     selections: Vec<bool>,
     multiselect: bool,
     cursor: usize,
@@ -12,7 +12,7 @@ pub(crate) struct Selector {
 }
 
 impl Selector {
-    pub fn new(options: Vec<impl Into<String> + Clone>,
+    pub fn new(options: Vec<impl CandyOption + 'static>,
                multiselect: bool,
                page_size: usize) -> Selector {
 
@@ -21,7 +21,7 @@ impl Selector {
         if !multiselect { selections[cursor] = true; }
 
         Selector {
-            options: options.iter().map(|o| (*o).clone().into()).collect_vec(),
+            options: options.into_iter().map(|s| Box::new(s) as Box<dyn CandyOption>).collect(),
             selections,
             multiselect,
             cursor,
@@ -104,7 +104,7 @@ impl Selector {
         let mut selections = Vec::new();
         for (i, s) in self.selections.iter().enumerate() {
             if *s {
-                selections.push(self.options[i].clone());
+                selections.push(self.options[i].id());
             }
         }
         selections
@@ -116,13 +116,9 @@ impl Selector {
         for (i, option) in self.options.iter().enumerate() {
             if !self.on_current_page(i) { continue; }
 
-            let cursor_at = i == self.cursor;
-            let selected = self.selections[i];
-
-            let option = if selected { option.bold().green() } else { option.to_owned() };
-            let prefix = if cursor_at { ">".cyan() } else { " ".bold() };
-
-            parts.push(format!("{} {}", prefix, option));
+            let base = option.render(i, self.cursor, &self.selections);
+            let prefix = if i == self.cursor { ">".cyan() } else { " ".bold() };
+            parts.push(format!("{} {}", prefix, base));
         }
         parts.push("".to_string());
         parts.join("\n\r")

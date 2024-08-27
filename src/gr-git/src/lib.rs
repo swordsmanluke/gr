@@ -30,6 +30,20 @@ impl Git {
         self.git("rebase", args)
     }
 
+    pub fn recursive_rebase(&self, branch: &str, args: Vec<&str>) -> Result<()> {
+        self.assert_in_repo()?;
+
+        self.switch(branch)?;
+        self.rebase(args.clone())?;
+
+
+        for child in self.children_of(branch)? {
+            self.recursive_rebase(&child, args.clone())?;
+        }
+
+        Ok(())
+    }
+
     pub fn sync(&self, branch: &str) -> Result<()> {
         self.switch(branch)?;
         self.pull(vec!["--rebase"])?;
@@ -43,6 +57,11 @@ impl Git {
     pub fn merge(&self, args: Vec<&str>) -> Result<String> {
         self.assert_in_repo()?;
         self.git("merge", args)
+    }
+
+    pub fn cherry_pick(&self, args: Vec<&str>) -> Result<String> {
+        self.assert_in_repo()?;
+        self.git("cherry-pick", args)
     }
 
     /***** Information *****/

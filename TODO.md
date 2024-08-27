@@ -6,10 +6,12 @@ The list is in alphabetical order, not order of importance
 so features may get done in a seemingly incoherent manner.
 
 ## Next Steps
-- [ ] Add Help menu
+- [ ] Split support
+- [ ] Squash support
+- [ ] Rename tool (back to 'gq'? or something else?)
 - [ ] Async widget support for status tracking
-- [ ] Find slowdowns in GQ
 - [ ] Add CircleCI support
+- [ ] Find slowdowns in GQ
 
 ## Port GQ Commands
 GQ is the previous version of this application. These commands
@@ -29,6 +31,7 @@ were already implemented and need to be ported to Rust.
 - [x] review: View open PRs for a given stack
   - [x] Reformat output, it's kinda ugly
 - [ ] split: Divide commits in a branch into N branches
+- [ ] squash: Merge N branches into a single branch
 - [x] submit: Recursively open PRs for the current stack
   - [x] Edit commit title
   - [ ] Edit commit message
@@ -80,6 +83,9 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
 General improvements / refactors to consider
 
 - [x] Bug: Editing Commit Title (during merge) doesn't display a cursor
+- [ ] Imp: Merge should delete merged branches
+- [ ] Bug: Merge should rebase remote branches onto remote branch before merging
+  - Github _can_ do this automatically, but it doesn't have to and the bottom-up merge order breaks if we don't do this.
 
 - [ ] Merge order
   - [ ] Bottom Up (1 merge to main per PR)
@@ -89,7 +95,7 @@ General improvements / refactors to consider
   - [ ] Supported tool types (vcs / code review / ci-cd)
   - [ ] Supported tools per type
     - [x] VCS: git
-    - [ ] CR:  github
+    - [x] CR:  github
     - [ ] CR:  gitlab
     - [ ] CICD: CircleCI
     - [ ] CICD: Jenkins
@@ -145,3 +151,7 @@ to connect to CircleCI (others in future!) and track deploy status
 
 - [ ] Redo the command verbs. Switch either to override git-cmds for familiarity... or break clean.
 - [ ] Overhaul error message support
+
+## Known Issues
+- [ ] Bug: Init - Fails on _brand-new_ git repos.
+  - Until the first 'Initial Commit' is committed, the branch list is empty, breaking GQ

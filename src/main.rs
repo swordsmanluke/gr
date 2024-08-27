@@ -4,15 +4,13 @@ mod indent;
 
 use anyhow::{anyhow, Result};
 use colored::Colorize;
-use candy::candy::Candy;
+use candy::candy::{Candy};
 use candy::events::CandyEvent;
 use candy::events::CandyEvent::Select;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
-use crate::gr::{merge, sync, reviews, submit, log, help};
+use crate::gr::{merge, sync, reviews, submit, log, help, split};
 use help::{show_usage, show_help};
-
-
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,7 +21,7 @@ async fn main() -> Result<()> {
     args.pop(); // Remove the first argument, which is the name of the program
 
     let res = match args.pop() {
-        Some(command) => process_command(command, &mut args, &candy).await,
+        Some(command) => process_command(command, &mut args).await,
         None => {
             println!("No argument provided");
             Ok(())
@@ -35,14 +33,14 @@ async fn main() -> Result<()> {
     if let Err(e) = res {
         println!("Error occurred: {}", e.to_string().red());
         return Err(e);
-    } else {
-        println!("{}", "Done".green());
     }
     Ok(())
 }
 
-async fn process_command(command: String, args: &mut Vec<String>, candy: &Candy) -> Result<()> {
+async fn process_command(command: String, args: &mut Vec<String>) -> Result<()> {
     let git = Git::new();
+    let candy = Candy::new();
+
     match command.as_str() {
         "bco" | "switch" => {
             let branch = args.first().unwrap_or(&select_branch()?).to_owned();
@@ -103,10 +101,12 @@ async fn process_command(command: String, args: &mut Vec<String>, candy: &Candy)
                 println!("  {}", url);
             }
         }
+        "split" => {
+            split()?;
+        }
         "submit" => {
             let cfg = config::read_config()?;
             submit(&cfg.code_review_tool, &cfg.origin).await?;
-            println!("{}", "Done".green());
         }
         "sync" => {
             println!("{}", "Syncing current stack...".green());
