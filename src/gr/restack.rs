@@ -23,14 +23,14 @@ impl SyncResult {
     pub fn status(&self) -> &SyncStatus { &self.b }
 }
 
-pub fn restack() -> Result<()> {
+pub fn sync() -> Result<()> {
     let git = Git::new();
 
     // Get the current branch
     let branch = git.current_branch()?;
 
     // Sync the current branch (and its parents)
-    let results = sync(branch.as_str())?;
+    let results = pull_and_rebase(branch.as_str())?;
     for res in &results { println!("{}: {}", res.branch().green(), sync_result_to_status_char(res.status())); }
     println!();
     // Try to fix any conflicts first
@@ -97,7 +97,7 @@ fn sync_result_to_status_char(status: &SyncStatus) -> String {
     }.to_string()
 }
 
-fn sync(branch: &str) -> Result<Vec<SyncResult>> {
+fn pull_and_rebase(branch: &str) -> Result<Vec<SyncResult>> {
     let git = Git::new();
 
     // Is 'branch' local, or remote?
@@ -112,7 +112,7 @@ fn sync(branch: &str) -> Result<Vec<SyncResult>> {
     // Update parent if any
     let mut results = match &parent {
         None => vec![],  // No parent - we're at the bottom and ready to begin!
-        Some(onto) => sync(onto)?  // Recurse to sync our parent!
+        Some(onto) => pull_and_rebase(onto)?  // Recurse to sync our parent!
     };
 
     // Okay, we're ready to sync - checkout 'branch' and update it!

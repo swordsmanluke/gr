@@ -9,7 +9,7 @@ use candy::events::CandyEvent;
 use candy::events::CandyEvent::Select;
 use gr_git::{ExecGit, Git};
 use gr::{initialize_gr, move_relative};
-use crate::gr::{merge, restack, reviews, submit, log, help};
+use crate::gr::{merge, sync, reviews, submit, log, help};
 use help::{show_usage, show_help};
 
 
@@ -110,7 +110,7 @@ async fn process_command(command: String, args: &mut Vec<String>, candy: &Candy)
         }
         "sync" => {
             println!("{}", "Syncing current stack...".green());
-            restack()?;
+            sync()?;
             println!("{}", "Complete".green());
         }
         "top" | "up" | "down" | "bottom" | "bu" | "bd" => {
