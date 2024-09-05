@@ -32,7 +32,7 @@ pub fn split() -> Result<()> {
         .map(|s| FormattedCommit::from_line(&s))
         .collect::<Vec<FormattedCommit>>();
 
-    match candy.choose_option("Select commit to split on", commits.clone(), true) {
+    match candy.choose_option("Select commit to split on", commits.clone(), None, true) {
         Select(selections) => {
             // Collect commits per branch
             let mut branches: Vec<Vec<FormattedCommit>> = vec![];
@@ -152,5 +152,9 @@ impl CandyOption for FormattedCommit {
         if cursor_at == index { out = out.bold(); }
 
         out.to_string()
+    }
+
+    fn filter(&self, query: &str) -> bool {
+        query.chars().all(|c| self.title.contains(c))
     }
 }

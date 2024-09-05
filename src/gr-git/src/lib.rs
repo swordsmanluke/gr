@@ -89,7 +89,7 @@ impl Git {
 
     pub fn status(&self) -> Result<String> {
         self.assert_in_repo()?;
-        self.git("status", vec![""])
+        self.git("status", vec![])
     }
 
     pub fn commit_diff(&self, branch: &str, parent: &str) -> Result<String> {

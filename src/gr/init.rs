@@ -118,7 +118,7 @@ fn select_remote(git: &Git) -> Result<Option<String>> {
         return Ok(None);
     }
 
-    match candy.select_one("Select your remote:", remotes) {
+    match candy.select_one("Select your remote:", remotes, None) {
         Submit(remote) => {
             let msg = format!("  {} {}", "Remote: ".green(), remote.clone().cyan());
             println!("{}", msg);
@@ -137,7 +137,7 @@ fn select_remote(git: &Git) -> Result<Option<String>> {
 
 fn select_review_tool() -> Result<CodeReviewService> {
     let candy = Candy::new();
-    match candy.select_one("Select your review tool:", vec![CodeReviewService::None.to_string(), CodeReviewService::Github.to_string()]) {
+    match candy.select_one("Select your review tool:", vec![CodeReviewService::None.to_string(), CodeReviewService::Github.to_string()], None) {
         Submit(tool) => {
             let tool = match tool.as_str() {
                 "Github" => CodeReviewService::Github,
@@ -160,7 +160,7 @@ fn select_review_tool() -> Result<CodeReviewService> {
 fn select_root_branch(git: &Git) -> Result<String> {
     let candy = Candy::new();
     let branches = git.branches()?;
-    match candy.select_one("Select root branch:", branches) {
+    match candy.select_one("Select root branch:", branches, None) {
         Submit(branch) => {
             let msg = format!("  {} {}", "Root branch: ".green(), branch.clone().cyan());
             println!("{}", msg);

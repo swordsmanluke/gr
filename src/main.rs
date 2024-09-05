@@ -131,7 +131,7 @@ fn select_branch() -> Result<String> {
     let branches = git.branch(vec![])?;
     let options = branches.lines().map(|s| s.to_string()).collect();
 
-    let selection = candy.choose_option("Select a branch", options, false);
+    let selection = candy.choose_option("Select a branch", options, None,false);
 
     match selection {
         Select(v) => Ok(v[0].clone()),

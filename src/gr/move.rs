@@ -70,7 +70,7 @@ fn move_up(git: &Git) -> Result<()> {
         0 => { println!("{}", "You are already at the top of the stack".green()) },
         1 => { git.checkout(vec![&children[0]])? }
         _ => {
-            match candy.select_one("Which branch do you want to go up to?", children) {
+            match candy.select_one("Which branch do you want to go up to?", children, None) {
                 Submit(c) => { git.checkout(vec![&c])? }
                 _ => {}, // canceled - do nothing.
             }
