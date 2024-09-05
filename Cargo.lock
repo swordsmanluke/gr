@@ -406,25 +406,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
-name = "gr"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "candy",
- "colored",
- "dirs",
- "gr-git",
- "gr-reviews",
- "itertools",
- "log",
- "regex",
- "serde",
- "tokio",
- "toml",
- "url",
-]
-
-[[package]]
 name = "gr-git"
 version = "0.1.0"
 dependencies = [
@@ -1341,6 +1322,25 @@ name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
+
+[[package]]
+name = "stk"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "candy",
+ "colored",
+ "dirs",
+ "gr-git",
+ "gr-reviews",
+ "itertools",
+ "log",
+ "regex",
+ "serde",
+ "tokio",
+ "toml",
+ "url",
+]
 
 [[package]]
 name = "subtle"
