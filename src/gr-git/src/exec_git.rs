@@ -10,7 +10,7 @@ impl ExecGit {
     }
 
     pub fn status(&self) -> Result<()> {
-        self.git("status", Vec::new())?;
+        self.git("status", vec![])?;
         Ok(())
     }
 
@@ -27,10 +27,12 @@ impl ExecGit {
     // TODO: git mergetool?
 
     fn git(&self, command: &str, args: Vec<String>) -> Result<()> {
-        let err = Command::new("git")
-            .arg(command)
-            .args(&*args)
-            .exec();
+        let mut cmd = Command::new("git");
+        cmd.arg(command);
+        if !args.is_empty() {
+            cmd.args(&*args);
+        }
+        let err = cmd.exec();
 
         // .exec means we should never get here.
         // our executable should be replaced by git
