@@ -5,10 +5,26 @@ me keep track of what needs doing.
 The list is in alphabetical order, not order of importance
 so features may get done in a seemingly incoherent manner.
 
+## BUGS
+P1: Showstopper - the tool cannot be used
+P2: Broken functionality - One or more functions do not succeed
+P3: Breaks expectations - A feature does something unexpected
+
+- [ ] **P1** Submit - picks wrong commit for PR title
+      Chooses the _latest_ commit instead of the _first_ commit.
+
+- [ ] **P2** Sync - doesn't remove merged branches with multiple commits
+      Create branch w 2+ commits
+      Squash remote branch to main
+      Sync does not detect merged commit == branch commits
+
+### Known Issues
+- [ ] **P3** Init - Fails on _brand-new_ git repos.
+  - Until the first 'Initial Commit' is committed, the branch list is empty, breaking GQ
+
+
 ## Next Steps
-- [ ] Split support
 - [ ] Squash support
-- [ ] Rename tool (back to 'gq'? or something else?)
 - [ ] Async widget support for status tracking
 - [ ] Add CircleCI support
 - [ ] Find slowdowns in GQ
@@ -17,31 +33,11 @@ so features may get done in a seemingly incoherent manner.
 GQ is the previous version of this application. These commands
 were already implemented and need to be ported to Rust.
 
-- [x] add_branch: Create a new `git` branch
-- [x] bottom: Move to the bottom of the commit stack
-- [x] checkout: Switch to a different branch
-- [x] commit: Save your latest changes
-- [x] down: Move down one branch in the stack
-- [x] init: Initialize a new project
-- [x] log: View the commit stack
 - [x] merge: Merge a stack of approved PRs 
   - [ ] Check Mergeability (see Connect with Github below)
   - [x] recursively tell GH to merge PRs
 - [ ] move: Change the parent of the current branch and rebase
-- [x] review: View open PRs for a given stack
-  - [x] Reformat output, it's kinda ugly
-- [ ] split: Divide commits in a branch into N branches
 - [ ] squash: Merge N branches into a single branch
-- [x] submit: Recursively open PRs for the current stack
-  - [x] Edit commit title
-  - [ ] Edit commit message
-  - [x] Push to remote
-  - [x] Create review
-- [x] sync: Download remote contents, then recursively pull-rebase on parent branch(es)
-  - [x] Auto-remove merged branches
-  - [x] Reparent descendants after deleting merged branches
-- [x] top: Move to the top of the stack
-- [x] up: Move one branch up the stack
 
 
 ## Improve UI
@@ -70,7 +66,6 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
   - [ ] gq 'new' - creates a new branch prefix for a feature
 
 - [ ] General
-  - [x] Commit to Ratatui or try something else
   - [ ] Color scheme
   - [ ] Unified "widgets" for each main type in GQ
     - [ ] Branch (w/w-out commits)
@@ -82,7 +77,6 @@ The UI is inconsistent and bad right now. Let's polish this up a bit!
 ## Internals
 General improvements / refactors to consider
 
-- [x] Bug: Editing Commit Title (during merge) doesn't display a cursor
 - [ ] Imp: Merge should delete merged branches
 - [ ] Bug: Merge should rebase remote branches onto remote branch before merging
   - Github _can_ do this automatically, but it doesn't have to and the bottom-up merge order breaks if we don't do this.
@@ -96,7 +90,7 @@ General improvements / refactors to consider
   - [ ] Supported tools per type
     - [x] VCS: git
     - [x] CR:  github
-    - [ ] CR:  gitlab
+    - [ ] CR:  gitea
     - [ ] CICD: CircleCI
     - [ ] CICD: Jenkins
   - [ ] Support "external script" types
@@ -104,38 +98,6 @@ General improvements / refactors to consider
         - e.g. a CR tool script wrapper must implement "create, merge, review"
             and return results in JSON format
 
-
-## Build out Git support
-To enable many of the features up there, we will need to ask
-`git` to help us do stuff. 
-
-- [x] current branch name
-- [x] parent of given branch
-  - [x] local
-  - [x] remote
-- [x] create a commit
-- [x] add files to commit
-- [x] push to remote
-- [x] pull from remote
-- [x] rebase
-- [x] check if currently _in_ a git repo
-- [x] list all local branches
-- [x] call git with arbitrary arguments 
-  - [x] ...and fork() to it 
-
-## Connect with Github
-To support opening/updating/merging PRs on behalf of the User,
-we want to support connecting to github (others in future, maybe!)
-
-- [x] authenticate to github
-- [x] open a PR
-- [x] list all PRs
-- [x] retrieve a PR's information
-- [ ] check a PR's mergeability 
-  - [x] wait to ensure there are no conflicts
-  - [ ] required checks passed
-  - [ ] required # of approvals met
-- [x] merge a PR
 
 ## Connect with CircleCI
 To support CI/CD approvals/tracking and suchlike, we want
@@ -152,6 +114,3 @@ to connect to CircleCI (others in future!) and track deploy status
 - [ ] Redo the command verbs. Switch either to override git-cmds for familiarity... or break clean.
 - [ ] Overhaul error message support
 
-## Known Issues
-- [ ] Bug: Init - Fails on _brand-new_ git repos.
-  - Until the first 'Initial Commit' is committed, the branch list is empty, breaking GQ

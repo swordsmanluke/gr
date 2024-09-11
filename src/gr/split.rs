@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use anyhow::Result;
-use candy::candy::{Candy, CandyOption};
+use candy::candy::{Candy};
+use candy::candy_option::CandyOption;
 use candy::events::CandyEvent;
 use candy::events::CandyEvent::{Select, Submit};
 use colored::Color::{Blue, BrightCyan, BrightGreen, BrightWhite, BrightYellow, Cyan, Green, Magenta, Red, White, Yellow};
