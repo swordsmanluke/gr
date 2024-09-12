@@ -140,8 +140,14 @@ async fn process_command(command: String, args: &mut Vec<String>) -> Result<()> 
                             println!("\n\nCommit title: {}", title);
                         }
                         "prompt" => {
-                            let prompt = candy.edit_line("Enter a prompt: ", None);
+                            let prompt = candy.edit_line("Enter a prompt:", None);
                             match prompt {
+                                CandyEvent::Submit(s) => { println!("You entered: {}", s) }
+                                _ => { println!("Canceled") }
+                            }
+
+                            let prompt_with_default = candy.edit_line("Enter a prompt with a default:", Some("default"));
+                            match prompt_with_default {
                                 CandyEvent::Submit(s) => { println!("You entered: {}", s) }
                                 _ => { println!("Canceled") }
                             }
