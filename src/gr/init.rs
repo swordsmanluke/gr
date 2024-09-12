@@ -25,7 +25,7 @@ pub fn initialize_gr() -> Result<()> {
 
     // Check if the config file exists
     if config_file_exists(&config_file_path) {
-        if candy.yn("gr is already initialized - reinitialize?") {}
+        if candy.yn("stk is already initialized - reinitialize?") {}
         else {
             println!("{}", "Aborted initialization".red());
             return Ok(());
