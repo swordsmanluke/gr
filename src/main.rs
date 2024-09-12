@@ -132,6 +132,12 @@ async fn process_command(command: String, args: &mut Vec<String>) -> Result<()> 
                             let parent = git.parent_of(&cur_branch, BranchType::Local)?;
                             let msg = get_commit_message(&cur_branch, parent.unwrap().as_str())?;
                             println!("Commit Message\n======\n{}", msg.join("\n"));
+
+                            let title = match msg.get(0) {
+                                Some(t) => t.to_string(),
+                                None => "".to_string(),
+                            };
+                            println!("\n\nCommit title: {}", title);
                         }
                         "prompt" => {
                             let prompt = candy.edit_line("Enter a prompt: ", None);
