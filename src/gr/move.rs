@@ -5,20 +5,20 @@ use candy::events::CandyEvent::Submit;
 use gr_git::{BranchType, Git};
 
 pub const MOVE_USAGE: [&str; 4] = [
-"gq move <up | bu>
+"stk move <up | bu>
 
 Move up in the stack. If the current branch has multiple children, you will be prompted to
 select one.",
 
-"gq move <down | bd>
+"stk move <down | bd>
 
 Move down in the stack.",
 
-"gq move <bottom | bb>
+"stk move <bottom | bb>
 
 Move to the bottom of the stack - this is the root of the current repo.",
 
-"gq move <top | bt>
+"stk move <top | bt>
 
 Move to the top of the stack - if any branch has multiple children, you will be prompted to
 select which branch to follow.",

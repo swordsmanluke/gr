@@ -9,7 +9,7 @@ use crate::gr::log::log_tree::{GitBranch, LogBranch};
 use crate::gr::log::tree::Tree;
 use crate::indent::Indentable;
 
-pub(crate) const USAGE: &str = "gq log
+pub(crate) const USAGE: &str = "stk log
 
 Displays the commit log stack.
 

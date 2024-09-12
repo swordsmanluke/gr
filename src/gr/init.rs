@@ -6,16 +6,16 @@ use candy::candy::Candy;
 use candy::events::CandyEvent::{Cancel, Submit};
 use crate::config::{config_dir_path, config_file_exists, CRAuth, GrConfBranch, GRConfig };
 
-pub(crate) const USAGE: &str = "gq init
+pub(crate) const USAGE: &str = "stk init
 
-Configure (or reconfigure) gq.
+Configure (or reconfigure) stk.
 Collects (or sets) the following information:
   - root branch
   - preferred remote
   - preferred code review tool
       - auth token (if needed)
 
-The config file for gq is in ~/.config/gr/<project>/<cwd>/config.toml";
+The config file for stk is in ~/.config/gr/<project>/<cwd>/config.toml";
 
 pub fn initialize_gr() -> Result<()> {
     let git = Git::new();
@@ -32,7 +32,7 @@ pub fn initialize_gr() -> Result<()> {
         }
     }
 
-    println!("{}", "Initializing GQ...".green());
+    println!("{}", "Initializing stk...".green());
 
     // Prepare -
     // Create the app's config directory if it doesn't exist

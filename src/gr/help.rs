@@ -3,13 +3,13 @@ use crate::gr::init;
 use crate::gr::log;
 use crate::gr::r#move::MOVE_USAGE;
 
-const USAGE: &str = "Usage: gq <command> [<args>]
+const USAGE: &str = "Usage: stk <command> [<args>]
 
-gq is a command line interface for managing stacked commits and code reviews.
-type 'gq help <command>' for detailed help with a specific command.
+stk is a command line interface for managing stacked commits and code reviews.
+type 'stk help <command>' for detailed help with a specific command.
 
 General Commands:
-    init            Configure (or reconfigure) gq
+    init            Configure (or reconfigure) stk
     help            Display this help message
     log             Display the commit log
 
@@ -36,23 +36,23 @@ Git Commands:
 
 const BRANCH_USAGE: [&str; 5] = [
 // Create
-"gq <create|bc> [branch name]
+"stk <create|bc> [branch name]
 
 Creates a new branch. If no name is provided, you will be prompted for one.",
 
 // Switch
-"gq <switch|bco> [branch name]
+"stk <switch|bco> [branch name]
 
 Switch to the specified branch. If no name is provided, you will be prompted to select one.",
 
 // Commit
-"gq <commit|cc>
+"stk <commit|cc>
 
 Commit changes. Follows 'git commit' syntax.
-e.g. 'gq cc -m \"My commit message\"' or 'gq cc --amend' work.",
+e.g. 'stk cc -m \"My commit message\"' or 'stk cc --amend' work.",
 
 // Submit
-"gq <submit>
+"stk <submit>
 
 Submit the current branch (and parents) for code review.
 Syncs the current stack with remote before submitting.
@@ -60,7 +60,7 @@ Syncs the current stack with remote before submitting.
 This will force-update the remote if there are any conflicts.",
 
 // Sync
-"gq <sync>
+"stk <sync>
 
 Sync from remote (recursive pull and rebase).
 
