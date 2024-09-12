@@ -7,9 +7,10 @@ use colored::Colorize;
 use candy::candy::{Candy};
 use candy::events::CandyEvent;
 use candy::events::CandyEvent::Select;
-use gr_git::{ExecGit, Git};
+use gr_git::{BranchType, ExecGit, Git};
 use gr::{initialize_gr, move_relative};
 use crate::gr::{merge, sync, reviews, submit, log, help, split};
+use gr::submit::get_commit_message;
 use help::{show_usage, show_help};
 
 #[tokio::main]
@@ -119,7 +120,26 @@ async fn process_command(command: String, args: &mut Vec<String>) -> Result<()> 
             let egit = ExecGit::new();
             egit.status()?; // Exits gr and hands control to git
         }
-        _ => { println!("Unknown command: {}", command) }
+        "debug" => {
+            // Secret command menu
+            let next = args.pop();
+            match next {
+                Some(arg) => {
+                    match arg.as_str() {
+                        "submit" => {
+                            println!("Debugging 'submit'.");
+                            let cur_branch = git.current_branch()?;
+                            let parent = git.parent_of(&cur_branch, BranchType::Local)?;
+                            let msg = get_commit_message(&cur_branch, parent.unwrap().as_str())?;
+                            println!("Commit Message\n======\n{}", msg.join("\n"));
+                        }
+                        _ => { println!("Unknown debug command: {}", arg) }
+                    }
+                }
+                None => { println!("Missing debug command") }
+            }
+        }
+        _ => { println!("FWD TO GIT: Unknown command: {}", command) }
     }
     Ok(())
 }

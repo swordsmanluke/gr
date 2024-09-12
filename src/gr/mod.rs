@@ -1,7 +1,7 @@
 mod init;
 mod r#move;
 mod restack;
-mod submit;
+pub(crate) mod submit;
 mod merge;
 mod log;
 pub(crate) mod help;

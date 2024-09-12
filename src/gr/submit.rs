@@ -93,11 +93,9 @@ async fn submit_branch(cr_service: &Box<dyn ReviewService>, remote: &str, branch
     Ok(reviews)
 }
 
-fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>> {
+pub(crate) fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>> {
     let git = Git::new();
-    let commit_messages = git.log(vec![&format!("{}..{}", parent, branch), "--format=%B"])?
-        .into_iter().rev()
-        .collect_vec();
+    let commit_messages = git.log(vec![&format!("{}..{}", parent, branch), "--format=%B", "--reverse"])?;
 
     Ok(commit_messages)
 }
