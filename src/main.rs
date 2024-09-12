@@ -133,6 +133,13 @@ async fn process_command(command: String, args: &mut Vec<String>) -> Result<()> 
                             let msg = get_commit_message(&cur_branch, parent.unwrap().as_str())?;
                             println!("Commit Message\n======\n{}", msg.join("\n"));
                         }
+                        "prompt" => {
+                            let prompt = candy.edit_line("Enter a prompt: ", None);
+                            match prompt {
+                                CandyEvent::Submit(s) => { println!("You entered: {}", s) }
+                                _ => { println!("Canceled") }
+                            }
+                        }
                         _ => { println!("Unknown debug command: {}", arg) }
                     }
                 }
