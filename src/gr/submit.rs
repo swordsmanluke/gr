@@ -6,6 +6,7 @@ use anyhow::{anyhow, Result};
 use colored::Colorize;
 use gr_git::Git;
 use gr_git::BranchType;
+use itertools::Itertools;
 use candy::symbols::SMALL_SQUARE;
 use regex::Regex;
 use candy::candy::Candy;
@@ -94,16 +95,10 @@ async fn submit_branch(cr_service: &Box<dyn ReviewService>, remote: &str, branch
 
 fn get_commit_message(branch: &str, parent: &str) -> Result<Vec<String>> {
     let git = Git::new();
-    let raw_commit_messages = &git.log(vec![&format!("{}..{}", parent, branch), "--format=%B"])?.join("\n");
+    let commit_messages = git.log(vec![&format!("{}..{}", parent, branch), "--format=%B"])?
+        .into_iter().rev()
+        .collect_vec();
 
-    let splitter = Regex::new(r"commit [a-f0-9]+")?;
-    let commit_msg_lines = splitter.split(raw_commit_messages).map(|s| s.split("\n")).flatten().map(|s| s.to_string()).collect::<Vec<String>>();
-
-    let commit_messages = commit_msg_lines
-        .into_iter()
-        .filter(|l| !l.is_empty())
-        .map(|l| l.to_string())
-        .collect::<Vec<String>>();
     Ok(commit_messages)
 }
 
