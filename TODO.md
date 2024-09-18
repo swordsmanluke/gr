@@ -10,9 +10,6 @@ P1: Showstopper - the tool cannot be used
 P2: Broken functionality - One or more functions do not succeed
 P3: Breaks expectations - A feature does something unexpected
 
-- [ ] **P1** Submit - picks wrong commit for PR title
-      Chooses the _latest_ commit instead of the _first_ commit.
-
 - [ ] **P2** Sync - doesn't remove merged branches with multiple commits
       Create branch w 2+ commits
       Squash remote branch to main
